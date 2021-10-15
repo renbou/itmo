@@ -1,0 +1,203 @@
+:root {
+  --border-color: rgb(185, 185, 185);
+  --border-radius: 6px;
+  --black-color: #333;
+  --caption-color: #3b5998;
+  color: var(--black-color);
+  font-family: Verdana, sans-serif;
+  font-size: 24px;
+}
+
+html {
+  padding: 1rem;
+  min-width: 600px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+@media (max-width: 1024px) {
+  :root {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 800px) {
+  :root {
+    font-size: 12px;
+  }
+}
+
+header {
+  position: relative;
+}
+
+header .languages {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+header .enter-or-register-box {
+  position: absolute;
+  top: 32px;
+  right: 0;
+}
+
+header nav {
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 0.75rem 0.25rem;
+  margin-top: 1rem;
+  position: relative;
+}
+
+header nav ul {
+  margin: 0;
+  padding: 0;
+}
+
+header nav ul li {
+  display: inline;
+  margin-left: 1rem;
+}
+
+header nav ul li a {
+  text-decoration: none;
+  color: var(--black-color);
+  font-family: "Arial Narrow", sans-serif;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.middle {
+  margin-top: 1rem;
+  overflow: auto;
+}
+
+aside {
+  float: right;
+  width: 20rem;
+}
+
+main {
+  margin-right: 21rem;
+}
+
+footer {
+  margin-top: 2rem;
+  border-top: 1px solid var(--border-color);
+  padding-top: 0.5rem;
+  text-align: center;
+}
+
+aside section {
+  border: 1px solid var(--border-color);
+  border-top-left-radius: var(--border-radius);
+  border-top-right-radius: var(--border-radius);
+}
+
+aside section .header {
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.25rem;
+  font-weight: bold;
+  color: var(--caption-color);
+}
+
+aside section .header:before {
+  content: "→";
+}
+
+aside section .body {
+  padding: 1rem;
+}
+
+aside section .footer {
+  border-top: 1px solid var(--border-color);
+  overflow: auto;
+  padding: 0.25rem;
+}
+
+aside section .footer a {
+  float: right;
+  font-size: 0.75rem;
+}
+
+aside section .footer a:after {
+  content: " →";
+}
+
+nav .search {
+  position: absolute;
+  left: auto;
+  right: 0.5rem;
+  /* Place 50% from the top of the containing block with non-static position */
+  top: 50%;
+  /* Adjust according to height of this element */
+  transform: translateY(-50%);
+}
+
+nav .search > input {
+  /* Set background and custom border */
+  background: rgb(242, 242, 242) url("../img/search-16x16.png") 0.2rem 50%
+    no-repeat;
+  border: rgb(211, 211, 211) solid 1px;
+  border-radius: 1px;
+  padding-left: 1.5rem; /* So that text starts after the image */
+  /* Specify width+height so that it doesn't depend on text-font height*/
+  width: 11.5rem;
+  height: 1.2rem;
+  font: 0.9rem sans-serif;
+  line-height: 0.1rem;
+}
+
+.middle > main > article > .title {
+  color: rgb(59, 89, 152);
+  font-weight: bolder;
+  font-size: 1.25rem;
+  margin-bottom: 0.3rem;
+}
+
+.middle > main > article > .information {
+  color: rgb(155, 155, 155);
+  font-size: 0.85rem;
+}
+
+.middle > main > article > .body {
+  padding-left: 0.7rem;
+  border-left: rgb(185, 185, 185) solid 0.4rem;
+  font-size: 0.95rem;
+  line-height: 1.3;
+}
+
+.middle > main > article > .attachment {
+  color: rgb(155, 155, 155);
+  padding: 0;
+  margin: 0.5rem 0;
+  font-size: 0.8rem;
+}
+
+.middle > main > article > .attachment li {
+  list-style: none;
+  /* Custom marker */
+  background: url("../img/paperclip-16x16.png") 0.2rem 50% no-repeat;
+  padding-left: 1.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.middle > main > article > .footer {
+  display: flex;
+  justify-content: space-between;
+  border: rgb(75, 55, 55) solid 1px;
+  padding: 0.4rem;
+  border-radius: 8px;
+}
+
+/* Align every inline child of footer elements to be on the same height */
+.middle > main > article > .footer > div * {
+  vertical-align: middle;
+}
+
+.positive-score {
+  color: green;
+  font-weight: bolder;
+}
