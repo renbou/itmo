@@ -1,0 +1,60 @@
+article.post > .title {
+    color: rgb(59, 89, 152);
+    font-weight: bolder;
+    font-size: 1.25rem;
+    margin-bottom: 0.3rem;
+}
+
+article.post > .information {
+    color: rgb(155, 155, 155);
+    font-size: 0.85rem;
+}
+
+article.post > .body {
+    padding-left: 0.7rem;
+    border-left: rgb(185, 185, 185) solid 0.4rem;
+    font-size: 0.95rem;
+    line-height: 1.3;
+    white-space: pre;
+}
+
+article.post > .attachment {
+    color: rgb(155, 155, 155);
+    padding: 0;
+    margin: 0.5rem 0;
+    font-size: 0.8rem;
+}
+
+article.post > .attachment li {
+    list-style: none;
+    /* Custom marker */
+    background: url("../img/paperclip-16x16.png") 0.2rem 50% no-repeat;
+    padding-left: 1.5rem;
+    margin-bottom: 0.4rem;
+}
+
+article.post > .footer {
+    display: flex;
+    justify-content: space-between;
+    border: rgb(75, 55, 55) solid 1px;
+    padding: 0.4rem;
+    border-radius: 8px;
+}
+
+/* Align every inline child of footer elements to be on the same height */
+article.post > .footer > div * {
+    vertical-align: middle;
+}
+
+article.post > .positive-score {
+    color: green;
+    font-weight: bolder;
+}
+
+.articles article.post {
+    margin-bottom: 1.5rem;
+}
+
+.articles article.post:last-child {
+    margin-bottom: 0;
+}
