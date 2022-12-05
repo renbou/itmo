@@ -83,3 +83,8 @@ func Test_Lex(t *testing.T) {
 		assert.Equal(t, tt.tokens, tokens)
 	}
 }
+
+func Test_Lex_Invalid(t *testing.T) {
+	_, err := Lex("lambda a: no.t,valid")
+	assert.ErrorIs(t, err, ErrInvalidIdentifier)
+}

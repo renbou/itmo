@@ -31,8 +31,6 @@ func Lex(input string) ([]Token, error) {
 }
 
 func (l *lexer) nextToken() (Token, error) {
-	ch := l.input[l.pos]
-
 	// First check if the lexeme is a simple character token
 	singleChTokens := map[rune]Token{
 		'(': TokenLParen,
@@ -40,16 +38,22 @@ func (l *lexer) nextToken() (Token, error) {
 		',': TokenComma,
 		':': TokenColon,
 	}
-	if token, ok := singleChTokens[ch]; ok {
+	if token, ok := singleChTokens[l.input[l.pos]]; ok {
 		l.pos++
 		return token, nil
 	}
 
-	// All other lexemes are non-whitespace character sequences
+	// All other lexemes are valid python identifiers.
 	start := l.pos
 	l.skipIdent()
 	end := l.pos
 	lexeme := l.input[start:end]
+
+	// String consisting of identifier chars might not be a valid identifier,
+	// also lexeme might be empty if no valid identifier chars were found.
+	if !isPythonIdentifier(lexeme) {
+		return -1, ErrInvalidIdentifier
+	}
 
 	stringTokens := map[string]Token{
 		"lambda": TokenLambda,
@@ -63,9 +67,6 @@ func (l *lexer) nextToken() (Token, error) {
 		return token, nil
 	}
 
-	if !isPythonIdentifier(lexeme) {
-		return -1, ErrInvalidIdentifier
-	}
 	return TokenIdent, nil
 }
 
