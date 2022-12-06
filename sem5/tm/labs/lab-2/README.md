@@ -51,10 +51,10 @@ Factor -> ( Expr )
 ```
 LambdaDecl -> lambda Args : Expr
 
-Args    -> eps
 Args    -> ident OptArgs
-OptArgs -> eps
+Args    -> eps
 OptArgs -> , ident OptArgs
+OptArgs -> eps
 
 Expr   -> Term ExprM
 ExprM  -> or Term ExprM

@@ -2,18 +2,18 @@ package lexer
 
 type Token int
 
-//go:generate stringer -type=Token
+//go:generate stringer -type=Token -linecomment
 const (
-	TokenEnd Token = iota
-	TokenLambda
-	TokenComma
-	TokenColon
-	TokenIdent
-	TokenOr
-	TokenAnd
-	TokenNot
-	TokenFalse
-	TokenTrue
-	TokenLParen
-	TokenRParen
+	TokenEnd    Token = iota // eps
+	TokenLambda              // lambda
+	TokenComma               // ,
+	TokenColon               // :
+	TokenIdent               // ident
+	TokenOr                  // or
+	TokenAnd                 // and
+	TokenNot                 // not
+	TokenFalse               // false
+	TokenTrue                // true
+	TokenLParen              // (
+	TokenRParen              // )
 )
