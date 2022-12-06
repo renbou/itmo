@@ -12,8 +12,6 @@ import (
 )
 
 func main() {
-	fmt.Print("input: ")
-
 	scanner := bufio.NewScanner(os.Stdin)
 	_ = scanner.Scan()
 	text := scanner.Text()
