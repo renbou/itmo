@@ -11,6 +11,7 @@ ANTLR=$(BIN_DIR)/antlr.jar
 	java -Xmx500M -cp "$(ANTLR):$$CLASSPATH" org.antlr.v4.Tool \
 		-Dlanguage=Go \
 		-no-listener -no-visitor \
-		-o grammar -package grammar *.g4
+		-o grammar -package grammar *.g4 && \
+	rm -f **/*.interp **/*.tokens
 
 generate: .generate-grammar
