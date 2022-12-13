@@ -12,7 +12,7 @@ def addnode(g: graphviz.Graph, node: dict):
   assert isinstance(node, dict)
   assert len(node) == 1
   name = next(iter(node.keys()))
-  items = node[name]
+  items = node[name] or []
   assert isinstance(items, list)
 
   parent = nodeid()
