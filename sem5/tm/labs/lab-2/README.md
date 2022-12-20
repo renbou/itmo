@@ -107,5 +107,5 @@ Factor -> ( ImplyExpr )
 1. `lambda: False imply True or False`  
 ![](img/example-1.png)
 
-2. `lambda a, b: (True or (False xor True and False) or (True))`
+2. `lambda a, b: (True or (False xor True and False) or (True))`  
 ![](img/example-2.png)
