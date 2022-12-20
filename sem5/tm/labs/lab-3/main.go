@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 
 	"prefixexpr/grammar"
 
@@ -9,7 +11,11 @@ import (
 )
 
 func main() {
-	is := antlr.NewInputStream("if = kek || < 1 * 4 7 == true && abobus ! false print + 3 kek if < 1 2 if true print 1337")
+	scanner := bufio.NewScanner(os.Stdin)
+	_ = scanner.Scan()
+	text := scanner.Text()
+
+	is := antlr.NewInputStream(text)
 	lexer := grammar.NewPrExprLexer(is)
 	stream := antlr.NewCommonTokenStream(lexer, antlr.TokenDefaultChannel)
 	parser := grammar.NewPrExprParser(stream)
