@@ -9,8 +9,10 @@ const (
 	TokenComma               // ,
 	TokenColon               // :
 	TokenIdent               // ident
+	TokenImply               // imply
 	TokenOr                  // or
 	TokenAnd                 // and
+	TokenXor                 // xor
 	TokenNot                 // not
 	TokenFalse               // false
 	TokenTrue                // true

@@ -33,6 +33,7 @@ func (p *parser) parseLambdaDecl() (*Tree, error) {
 		return nil, p.errUnexpected("LambdaDecl")
 	}
 
+	p.contin()
 	args, err := p.parseArgs()
 	if err != nil {
 		return nil, err
@@ -42,7 +43,8 @@ func (p *parser) parseLambdaDecl() (*Tree, error) {
 		return nil, p.errUnexpected("LambdaDecl")
 	}
 
-	expr, err := p.parseExpr()
+	p.contin()
+	expr, err := p.parseImplyExpr()
 	if err != nil {
 		return nil, err
 	}
@@ -61,10 +63,10 @@ func (p *parser) parseLambdaDecl() (*Tree, error) {
 }
 
 func (p *parser) parseArgs() (*Tree, error) {
-	p.contin()
 	switch p.token() {
 	// 1 or more arguments
 	case lexer.TokenIdent:
+		p.contin()
 		cont, err := p.parseOptArgs()
 		if err != nil {
 			return nil, err
@@ -80,7 +82,6 @@ func (p *parser) parseArgs() (*Tree, error) {
 }
 
 func (p *parser) parseOptArgs() (*Tree, error) {
-	p.contin()
 	switch p.token() {
 	// One more argument
 	case lexer.TokenComma:
@@ -90,6 +91,7 @@ func (p *parser) parseOptArgs() (*Tree, error) {
 		}
 
 		// Continuation
+		p.contin()
 		cont, err := p.parseOptArgs()
 		if err != nil {
 			return nil, err
@@ -108,8 +110,54 @@ func (p *parser) parseOptArgs() (*Tree, error) {
 	}
 }
 
+func (p *parser) parseImplyExpr() (*Tree, error) {
+	switch p.token() {
+	case lexer.TokenIdent, lexer.TokenFalse, lexer.TokenTrue, lexer.TokenNot, lexer.TokenLParen:
+		expr, err := p.parseExpr()
+		if err != nil {
+			return nil, err
+		}
+
+		cont, err := p.parseImplyExprM()
+		if err != nil {
+			return nil, err
+		}
+
+		return T("ImplyExpr", expr, cont), nil
+	default:
+		return nil, p.errUnexpected("ImplyExpr")
+	}
+}
+
+func (p *parser) parseImplyExprM() (*Tree, error) {
+	switch p.token() {
+	// Lowest-priority imply operation
+	case lexer.TokenImply:
+		p.contin()
+		expr, err := p.parseExpr()
+		if err != nil {
+			return nil, err
+		}
+
+		cont, err := p.parseImplyExprM()
+		if err != nil {
+			return nil, err
+		}
+
+		return T("ImplyExprM",
+			T(lexer.TokenImply.String()),
+			expr,
+			cont,
+		), nil
+	// end of expression
+	case lexer.TokenRParen, lexer.TokenEnd:
+		return T("ImplyExprM"), nil
+	default:
+		return nil, p.errUnexpected("ImplyExprM")
+	}
+}
+
 func (p *parser) parseExpr() (*Tree, error) {
-	p.contin()
 	switch p.token() {
 	case lexer.TokenIdent, lexer.TokenFalse, lexer.TokenTrue, lexer.TokenNot, lexer.TokenLParen:
 		term, err := p.parseTerm()
@@ -149,7 +197,7 @@ func (p *parser) parseExprM() (*Tree, error) {
 			cont,
 		), nil
 	// end of expression
-	case lexer.TokenRParen, lexer.TokenEnd:
+	case lexer.TokenImply, lexer.TokenRParen, lexer.TokenEnd:
 		return T("ExprM"), nil
 	default:
 		return nil, p.errUnexpected("ExprM")
@@ -157,10 +205,9 @@ func (p *parser) parseExprM() (*Tree, error) {
 }
 
 func (p *parser) parseTerm() (*Tree, error) {
-	// p.contin already called elsewhere
 	switch p.token() {
 	case lexer.TokenIdent, lexer.TokenFalse, lexer.TokenTrue, lexer.TokenNot, lexer.TokenLParen:
-		factor, err := p.parseFactor()
+		xorTerm, err := p.parseXorTerm()
 		if err != nil {
 			return nil, err
 		}
@@ -170,19 +217,18 @@ func (p *parser) parseTerm() (*Tree, error) {
 			return nil, err
 		}
 
-		return T("Term", factor, cont), nil
+		return T("Term", xorTerm, cont), nil
 	default:
 		return nil, p.errUnexpected("Term")
 	}
 }
 
 func (p *parser) parseTermM() (*Tree, error) {
-	p.contin()
 	switch p.token() {
 	// High-priority and operation
 	case lexer.TokenAnd:
 		p.contin()
-		factor, err := p.parseFactor()
+		xorTerm, err := p.parseXorTerm()
 		if err != nil {
 			return nil, err
 		}
@@ -194,23 +240,71 @@ func (p *parser) parseTermM() (*Tree, error) {
 
 		return T("TermM",
 			T(lexer.TokenAnd.String()),
-			factor,
+			xorTerm,
 			cont,
 		), nil
 	// Lower priority op or end of expr
-	case lexer.TokenOr, lexer.TokenRParen, lexer.TokenEnd:
+	case lexer.TokenImply, lexer.TokenOr, lexer.TokenRParen, lexer.TokenEnd:
 		return T("TermM"), nil
 	default:
 		return nil, p.errUnexpected("TermM")
 	}
 }
 
+func (p *parser) parseXorTerm() (*Tree, error) {
+	switch p.token() {
+	case lexer.TokenIdent, lexer.TokenFalse, lexer.TokenTrue, lexer.TokenNot, lexer.TokenLParen:
+		factor, err := p.parseFactor()
+		if err != nil {
+			return nil, err
+		}
+
+		cont, err := p.parseXorTermM()
+		if err != nil {
+			return nil, err
+		}
+
+		return T("XorTerm", factor, cont), nil
+	default:
+		return nil, p.errUnexpected("XorTerm")
+	}
+}
+
+func (p *parser) parseXorTermM() (*Tree, error) {
+	switch p.token() {
+	// Higher-priority xor operation
+	case lexer.TokenXor:
+		p.contin()
+		factor, err := p.parseFactor()
+		if err != nil {
+			return nil, err
+		}
+
+		cont, err := p.parseXorTermM()
+		if err != nil {
+			return nil, err
+		}
+
+		return T("XorTermM",
+			T(lexer.TokenXor.String()),
+			factor,
+			cont,
+		), nil
+	// Lower priority op or end of expr
+	case lexer.TokenImply, lexer.TokenOr, lexer.TokenAnd, lexer.TokenRParen, lexer.TokenEnd:
+		return T("XorTermM"), nil
+	default:
+		return nil, p.errUnexpected("XorTermM")
+	}
+}
+
 func (p *parser) parseFactor() (*Tree, error) {
-	// p.contin already called elsewhere
 	switch p.token() {
 	// simple factor
 	case lexer.TokenIdent, lexer.TokenFalse, lexer.TokenTrue:
-		return T("Factor", T(p.token().String())), nil
+		token := p.token()
+		p.contin()
+		return T("Factor", T(token.String())), nil
 	// one or more not's
 	case lexer.TokenNot:
 		p.contin()
@@ -222,7 +316,8 @@ func (p *parser) parseFactor() (*Tree, error) {
 		return T("Factor", T(lexer.TokenNot.String()), factor), nil
 	// wrapped expression
 	case lexer.TokenLParen:
-		expr, err := p.parseExpr()
+		p.contin()
+		expr, err := p.parseImplyExpr()
 		if err != nil {
 			return nil, err
 		}
@@ -231,6 +326,7 @@ func (p *parser) parseFactor() (*Tree, error) {
 			return nil, p.errUnexpected("Factor")
 		}
 
+		p.contin()
 		return T("Factor",
 			T(lexer.TokenLParen.String()),
 			expr,

@@ -13,18 +13,20 @@ func _() {
 	_ = x[TokenComma-2]
 	_ = x[TokenColon-3]
 	_ = x[TokenIdent-4]
-	_ = x[TokenOr-5]
-	_ = x[TokenAnd-6]
-	_ = x[TokenNot-7]
-	_ = x[TokenFalse-8]
-	_ = x[TokenTrue-9]
-	_ = x[TokenLParen-10]
-	_ = x[TokenRParen-11]
+	_ = x[TokenImply-5]
+	_ = x[TokenOr-6]
+	_ = x[TokenAnd-7]
+	_ = x[TokenXor-8]
+	_ = x[TokenNot-9]
+	_ = x[TokenFalse-10]
+	_ = x[TokenTrue-11]
+	_ = x[TokenLParen-12]
+	_ = x[TokenRParen-13]
 }
 
-const _Token_name = "epslambda,:identorandnotfalsetrue()"
+const _Token_name = "epslambda,:identimplyorandxornotfalsetrue()"
 
-var _Token_index = [...]uint8{0, 3, 9, 10, 11, 16, 18, 21, 24, 29, 33, 34, 35}
+var _Token_index = [...]uint8{0, 3, 9, 10, 11, 16, 21, 23, 26, 29, 32, 37, 41, 42, 43}
 
 func (i Token) String() string {
 	if i < 0 || i >= Token(len(_Token_index)-1) {

@@ -72,6 +72,11 @@ func Test_Lex(t *testing.T) {
 			TokenRParen,
 			TokenEnd,
 		}},
+		{"lambda a: a imply True xor False", []Token{
+			TokenLambda, TokenIdent, TokenColon,
+			TokenIdent, TokenImply, TokenTrue, TokenXor, TokenFalse,
+			TokenEnd,
+		}},
 	}
 
 	for _, tt := range tests {

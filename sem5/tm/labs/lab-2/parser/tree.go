@@ -57,11 +57,11 @@ func (t *Tree) prettify() any {
 		}
 		return args
 	// if only single element is present, avoid writing deeply nested structures
-	case "Expr", "Term":
+	case "ImplyExpr", "Expr", "Term", "XorTerm":
 		if t.children[1].children == nil {
 			return t.children[0]
 		}
-	case "ExprM", "TermM":
+	case "ImplyExprM", "ExprM", "TermM", "XorTermM":
 		if t.children != nil && t.children[2].children == nil {
 			t.children = t.children[:2]
 		}

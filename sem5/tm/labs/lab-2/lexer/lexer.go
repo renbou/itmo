@@ -57,8 +57,10 @@ func (l *lexer) nextToken() (Token, error) {
 
 	stringTokens := map[string]Token{
 		"lambda": TokenLambda,
+		"imply":  TokenImply,
 		"or":     TokenOr,
 		"and":    TokenAnd,
+		"xor":    TokenXor,
 		"not":    TokenNot,
 		"True":   TokenTrue,
 		"False":  TokenFalse,
