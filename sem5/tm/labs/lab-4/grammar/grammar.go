@@ -12,8 +12,9 @@ import (
 
 // Grammar describes a fully parsed grammar.
 type Grammar struct {
-	LexTokens  LexTokens
-	ParseRules ParseRules
+	LexTokens        LexTokens
+	StartNonTerminal string
+	ParseRules       ParseRules
 }
 
 // LexTokens describes a grammar's lexer tokens.

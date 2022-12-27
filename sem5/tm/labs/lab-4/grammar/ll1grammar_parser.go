@@ -283,7 +283,7 @@ func (p *LL1GrammarParser) Ll1Grammar() (localctx ILl1GrammarContext) {
 
 		localctx.(*Ll1GrammarContext).r = _x
 	}
-	localctx.(*Ll1GrammarContext).SetGrammar(Grammar{LexTokens: localctx.(*Ll1GrammarContext).GetT().GetTokens(), ParseRules: localctx.(*Ll1GrammarContext).GetR().GetRules()})
+	localctx.(*Ll1GrammarContext).SetGrammar(Grammar{LexTokens: localctx.(*Ll1GrammarContext).GetT().GetTokens(), StartNonTerminal: localctx.(*Ll1GrammarContext).GetR().GetStartNonTerm(), ParseRules: localctx.(*Ll1GrammarContext).GetR().GetRules()})
 
 	return localctx
 }
@@ -627,8 +627,14 @@ type ILl1RulesContext interface {
 	// GetRules returns the rules attribute.
 	GetRules() ParseRules
 
+	// GetStartNonTerm returns the startNonTerm attribute.
+	GetStartNonTerm() string
+
 	// SetRules sets the rules attribute.
 	SetRules(ParseRules)
+
+	// SetStartNonTerm sets the startNonTerm attribute.
+	SetStartNonTerm(string)
 
 	// IsLl1RulesContext differentiates from other interfaces.
 	IsLl1RulesContext()
@@ -636,9 +642,10 @@ type ILl1RulesContext interface {
 
 type Ll1RulesContext struct {
 	*antlr.BaseParserRuleContext
-	parser antlr.Parser
-	rules  ParseRules
-	r      IAllRulesContext
+	parser       antlr.Parser
+	rules        ParseRules
+	startNonTerm string
+	r            IAllRulesContext
 }
 
 func NewEmptyLl1RulesContext() *Ll1RulesContext {
@@ -669,7 +676,11 @@ func (s *Ll1RulesContext) SetR(v IAllRulesContext) { s.r = v }
 
 func (s *Ll1RulesContext) GetRules() ParseRules { return s.rules }
 
+func (s *Ll1RulesContext) GetStartNonTerm() string { return s.startNonTerm }
+
 func (s *Ll1RulesContext) SetRules(v ParseRules) { s.rules = v }
+
+func (s *Ll1RulesContext) SetStartNonTerm(v string) { s.startNonTerm = v }
 
 func (s *Ll1RulesContext) AllRules() IAllRulesContext {
 	var t antlr.RuleContext
@@ -738,7 +749,9 @@ func (p *LL1GrammarParser) Ll1Rules() (localctx ILl1RulesContext) {
 		p.SetState(39)
 		p.Match(LL1GrammarParserT__2)
 	}
+
 	localctx.(*Ll1RulesContext).SetRules(localctx.(*Ll1RulesContext).GetR().GetRules())
+	localctx.(*Ll1RulesContext).SetStartNonTerm(localctx.(*Ll1RulesContext).GetR().GetStartNonTerm())
 
 	return localctx
 }
@@ -765,8 +778,14 @@ type IAllRulesContext interface {
 	// GetRules returns the rules attribute.
 	GetRules() ParseRules
 
+	// GetStartNonTerm returns the startNonTerm attribute.
+	GetStartNonTerm() string
+
 	// SetRules sets the rules attribute.
 	SetRules(ParseRules)
+
+	// SetStartNonTerm sets the startNonTerm attribute.
+	SetStartNonTerm(string)
 
 	// IsAllRulesContext differentiates from other interfaces.
 	IsAllRulesContext()
@@ -774,10 +793,11 @@ type IAllRulesContext interface {
 
 type AllRulesContext struct {
 	*antlr.BaseParserRuleContext
-	parser antlr.Parser
-	rules  ParseRules
-	rest   IAllRulesContext
-	r      ISingleRuleContext
+	parser       antlr.Parser
+	rules        ParseRules
+	startNonTerm string
+	rest         IAllRulesContext
+	r            ISingleRuleContext
 }
 
 func NewEmptyAllRulesContext() *AllRulesContext {
@@ -812,7 +832,11 @@ func (s *AllRulesContext) SetR(v ISingleRuleContext) { s.r = v }
 
 func (s *AllRulesContext) GetRules() ParseRules { return s.rules }
 
+func (s *AllRulesContext) GetStartNonTerm() string { return s.startNonTerm }
+
 func (s *AllRulesContext) SetRules(v ParseRules) { s.rules = v }
+
+func (s *AllRulesContext) SetStartNonTerm(v string) { s.startNonTerm = v }
 
 func (s *AllRulesContext) SingleRule() ISingleRuleContext {
 	var t antlr.RuleContext
@@ -900,6 +924,8 @@ func (p *LL1GrammarParser) allRules(_p int) (localctx IAllRulesContext) {
 		p.SetState(44)
 		p.Match(LL1GrammarParserT__4)
 	}
+
+	localctx.(*AllRulesContext).SetStartNonTerm(localctx.(*AllRulesContext).GetR().GetName())
 	localctx.(*AllRulesContext).SetRules(ParseRules{localctx.(*AllRulesContext).GetR().GetName(): []ParseRule{localctx.(*AllRulesContext).GetR().GetComponents()}})
 
 	p.GetParserRuleContext().SetStop(p.GetTokenStream().LT(-1))
@@ -933,8 +959,9 @@ func (p *LL1GrammarParser) allRules(_p int) (localctx IAllRulesContext) {
 				p.Match(LL1GrammarParserT__4)
 			}
 
+			localctx.(*AllRulesContext).SetStartNonTerm(localctx.(*AllRulesContext).GetRest().GetStartNonTerm())
 			localctx.(*AllRulesContext).SetRules(localctx.(*AllRulesContext).GetRest().GetRules())
-			localctx.(*AllRulesContext).rules[localctx.(*AllRulesContext).GetR().GetName()] = append([]ParseRule{localctx.(*AllRulesContext).GetR().GetComponents()}, localctx.(*AllRulesContext).rules[localctx.(*AllRulesContext).GetR().GetName()]...)
+			localctx.(*AllRulesContext).rules[localctx.(*AllRulesContext).GetR().GetName()] = append(localctx.(*AllRulesContext).rules[localctx.(*AllRulesContext).GetR().GetName()], localctx.(*AllRulesContext).GetR().GetComponents())
 
 		}
 		p.SetState(56)

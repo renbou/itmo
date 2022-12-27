@@ -12,6 +12,9 @@ import (
 func GenerateAll(g grammar.Grammar, pkg string) ([]byte, error) {
 	tokens := newTokenSet(g.LexTokens)
 
+	first := rulesFirst(g.ParseRules, tokens)
+	_ = nontermFollow(g.ParseRules, g.StartNonTerminal, tokens, first)
+
 	lexer, err := generateLexer(tokens)
 	if err != nil {
 		return nil, fmt.Errorf("generating lexer: %w", err)

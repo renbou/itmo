@@ -1,7 +1,7 @@
 grammar LL1Grammar;
 
 ll1Grammar returns [Grammar grammar]
-  : t=ll1Tokens r=ll1Rules {$grammar = Grammar{LexTokens: $t.tokens, ParseRules: $r.rules}; }
+  : t=ll1Tokens r=ll1Rules {$grammar = Grammar{LexTokens: $t.tokens, StartNonTerminal: $r.startNonTerm, ParseRules: $r.rules}; }
   ;
 
 ll1Tokens returns [LexTokens tokens]
@@ -15,18 +15,25 @@ optionalTokensNamed returns [[]namedToken named]
   | { $named = nil; }
   ;
 
-ll1Rules returns [ParseRules rules]
+ll1Rules returns [ParseRules rules, string startNonTerm]
   : 'rules' '{'
       r=allRules
-    '}' { $rules = $r.rules; }
+    '}' {
+      $rules = $r.rules;
+      $startNonTerm = $r.startNonTerm;
+    }
   ;
 
-allRules returns [ParseRules rules]
+allRules returns [ParseRules rules, string startNonTerm]
   : rest=allRules r=singleRule ';' {
+      $startNonTerm = $rest.startNonTerm;
       $rules = $rest.rules;
-      $rules[$r.name] = append([]ParseRule{$r.components}, $rules[$r.name]...);
+      $rules[$r.name] = append($rules[$r.name], $r.components);
     }
-  | r=singleRule ';' { $rules = ParseRules{$r.name: []ParseRule{$r.components}}; }
+  | r=singleRule ';' {
+      $startNonTerm = $r.name;
+      $rules = ParseRules{$r.name: []ParseRule{$r.components}};
+    }
   ;
 
 singleRule returns [string name, []ParseRuleComponent components]

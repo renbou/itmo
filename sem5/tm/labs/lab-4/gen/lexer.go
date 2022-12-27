@@ -11,7 +11,10 @@ import (
 	"github.com/samber/lo"
 )
 
-const whitespaceRegExp = `^\s+`
+const (
+	whitespaceRegExp = `^\s+`
+	eofTokenID       = -1
+)
 
 var lexerTmpl = template.Must(template.New("lexer").Parse(`
 type token struct {

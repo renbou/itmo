@@ -74,8 +74,7 @@ func outputGrammar(g grammar.Grammar) {
 	ruleNames := lo.Keys(g.ParseRules)
 	sort.Strings(ruleNames)
 	for _, name := range ruleNames {
-		rules := g.ParseRules[name]
-		for _, rule := range rules {
+		for _, rule := range g.ParseRules[name] {
 			fmt.Printf("  %s = %s\n", name, strings.Join(lo.Map(rule, func(c grammar.ParseRuleComponent, _ int) string {
 				if c.Type == grammar.ParseRuleComponentLiteral {
 					return strconv.Quote(c.Value)
@@ -84,4 +83,6 @@ func outputGrammar(g grammar.Grammar) {
 			}), " "))
 		}
 	}
+
+	fmt.Printf("Start: %s\n", g.StartNonTerminal)
 }
