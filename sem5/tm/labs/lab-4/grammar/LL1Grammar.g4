@@ -38,7 +38,7 @@ singleRule returns [string name, []ParseRuleComponent components]
 
 ruleComponentList returns [[]ParseRuleComponent components]
   : c=ruleComponent rest=ruleComponentList { $components = append([]ParseRuleComponent{$c.component}, $rest.components...); }
-  | c=ruleComponent { $components = []ParseRuleComponent{$c.component}; }
+  | { $components = nil; }
   ;
 
 ruleComponent returns [ParseRuleComponent component]

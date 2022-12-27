@@ -1,16 +1,17 @@
 package gen
 
 import (
+	"bytes"
 	"fmt"
 	"regexp"
-	"strconv"
-	"strings"
 	"text/template"
 
 	"ll1gen/grammar"
 
 	"github.com/samber/lo"
 )
+
+const whitespaceRegExp = `^\s+`
 
 var lexerTmpl = template.Must(template.New("lexer").Parse(`
 type token struct {
@@ -19,10 +20,54 @@ type token struct {
 }
 
 var (
-	tokenRe = {{.tokenRe}}
-	tokenReGroupToID = map[int]int{
-	{{range $id, $group := .groupIndices}}{{printf "\t%d: %d,\n\t" $group $id}}{{end}}}
+	tokenRegExps = []*regexp.Regexp{
+	{{range $id, $t := .tokens}}{{printf "\tregexp.MustCompile(%s),\n\t" $t}}{{end}}}
+
+	whitespaceRegExp = regexp.MustCompile({{.ws}})
 )
+
+func lex(text string) ([]token, error) {
+	var (
+		tokens   []token
+		leftover = text
+		matched  = true
+	)
+
+	for matched {
+		ws := whitespaceRegExp.FindStringIndex(leftover)
+		if ws != nil {
+			leftover = leftover[ws[1]:]
+			continue
+		}
+
+		var (
+			maxLen   int
+			maxToken *token
+		)
+
+		for id, re := range tokenRegExps {
+			m := re.FindString(leftover)
+			if len(m) > maxLen {
+				maxLen = len(m)
+				maxToken = &token{
+					id:    id,
+					value: m,
+				}
+			}
+		}
+
+		if maxToken != nil {
+			tokens = append(tokens, *maxToken)
+			leftover = leftover[maxLen:]
+		}
+		matched = maxToken != nil
+	}
+
+	if leftover != "" {
+		return nil, fmt.Errorf("unmatched suffix %s left over", strconv.Quote(leftover))
+	}
+	return tokens, nil
+}
 `))
 
 type tokenSet struct {
@@ -31,31 +76,27 @@ type tokenSet struct {
 	named    map[string]int
 }
 
-func generateLexer(tokens *tokenSet) (string, error) {
-	var b strings.Builder
+func generateLexer(tokens *tokenSet) ([]byte, error) {
+	var b bytes.Buffer
 
-	// Construct regular expression for all of the possible tokens.
-	groups := lo.Map(tokens.list, func(s string, i int) string {
-		return fmt.Sprintf("(?P<token%d>^%s)", i, s)
+	// Validate regular expressions for all of the possible tokens.
+	for _, t := range tokens.list {
+		_, err := regexp.Compile(t)
+		if err != nil {
+			return nil, fmt.Errorf("compiling token regexp (%s): %w", t, err)
+		}
+	}
+
+	// Prepare regexp for the template.
+	tokenRegExps := lo.Map(tokens.list, func(s string, _ int) string {
+		return "`^" + s + "`"
 	})
-	r := strings.Join(groups, "|")
 
-	re, err := regexp.Compile(r)
-	if err != nil {
-		return "", fmt.Errorf("compiling lexer regexp (%s): %w", r, err)
+	if err := lexerTmpl.Execute(&b, map[string]any{"tokens": tokenRegExps, "ws": "`" + whitespaceRegExp + "`"}); err != nil {
+		return nil, err
 	}
 
-	// Get indices of all groups, since token patterns may contain nested groups
-	groupIndices := make([]int, len(tokens.list))
-	for i := range tokens.list {
-		groupIndices[i] = re.SubexpIndex(fmt.Sprintf("token%d", i))
-	}
-
-	if err := lexerTmpl.Execute(&b, map[string]any{"tokenRe": strconv.Quote(r), "groupIndices": groupIndices}); err != nil {
-		return "", err
-	}
-
-	return b.String(), nil
+	return b.Bytes(), nil
 }
 
 func newTokenSet(tokens grammar.LexTokens) *tokenSet {

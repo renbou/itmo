@@ -37,7 +37,7 @@ func main() {
 		failf("Generation failed: %s\n", err)
 	}
 
-	if err := os.WriteFile(*outputFile, []byte(result), 0o644); err != nil {
+	if err := os.WriteFile(*outputFile, result, 0o644); err != nil {
 		failf("Unable to save generated file to %s: %s", *outputFile, err)
 	}
 }
