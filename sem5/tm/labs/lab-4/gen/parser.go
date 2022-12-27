@@ -170,3 +170,47 @@ func debugFollow(f map[string]ffset, tokens *tokenSet) {
 		fmt.Printf("  %s = %s\n", name, strings.Join(terminals, ", "))
 	}
 }
+
+func firstFirstConflict(first map[string][]ffset) error {
+	for name, fs := range first {
+		total := make(ffset)
+
+		for _, f := range fs {
+			intersect := lo.SomeBy(lo.Keys(f), total.contains)
+			if intersect {
+				return fmt.Errorf("FIRST/FIRST conflict between rules for %s", name)
+			}
+
+			total.uniteWith(f)
+		}
+	}
+
+	return nil
+}
+
+func firstFollowConflict(first map[string][]ffset, follow map[string]ffset) error {
+	for name, fs := range first {
+		someRuleHasE := lo.SomeBy(first[name], func(f ffset) bool {
+			return f.containsE()
+		})
+
+		if !someRuleHasE {
+			continue
+		}
+		for _, f := range fs {
+			intersect := lo.SomeBy(lo.Keys(f), func(id int) bool {
+				// follow set can definitely not contains EPS, but we mark them the same
+				if id == eofTokenID {
+					return false
+				}
+
+				return follow[name].contains(id)
+			})
+			if intersect {
+				return fmt.Errorf("FIRST/FOLLOW conflict between rules for %s", name)
+			}
+		}
+	}
+
+	return nil
+}

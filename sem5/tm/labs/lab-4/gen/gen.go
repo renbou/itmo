@@ -13,7 +13,14 @@ func GenerateAll(g grammar.Grammar, pkg string) ([]byte, error) {
 	tokens := newTokenSet(g.LexTokens)
 
 	first := rulesFirst(g.ParseRules, tokens)
-	_ = nontermFollow(g.ParseRules, g.StartNonTerminal, tokens, first)
+	if err := firstFirstConflict(first); err != nil {
+		return nil, err
+	}
+
+	follow := nontermFollow(g.ParseRules, g.StartNonTerminal, tokens, first)
+	if err := firstFollowConflict(first, follow); err != nil {
+		return nil, err
+	}
 
 	lexer, err := generateLexer(tokens)
 	if err != nil {

@@ -1,0 +1,8 @@
+tokens {}
+
+rules {
+  A = "a" B;
+  A = "a" C;
+  B = "1";
+  C = "2";
+}

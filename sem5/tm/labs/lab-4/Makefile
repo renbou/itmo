@@ -15,3 +15,9 @@ ANTLR=$(BIN_DIR)/antlr.jar
 	rm -f **/*.interp **/*.tokens
 
 generate: .generate-grammar
+
+run-examples:
+	echo "Example of FIRST/FIRST conflict" &&\
+	go run ./main.go -i ./examples/first-first-conflict.ll1 ||\
+	echo "\n\nExample of FIRST/FOLLOW conflict" &&\
+	go run ./main.go -i ./examples/first-follow-conflict.ll1
