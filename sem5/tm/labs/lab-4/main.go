@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"ll1gen/gen"
 	"ll1gen/grammar"
 
 	"github.com/samber/lo"
@@ -15,21 +16,35 @@ import (
 
 func main() {
 	inputFile := flag.String("i", "", "Grammar input file.")
+	outputFile := flag.String("o", "", "Output file for generated lexer and parser.")
+	outputPackage := flag.String("p", "parser", "Generated file package.")
 	flag.Parse()
 
 	grammar, err := parseGrammarFile(*inputFile)
 	if err != nil {
-		fmt.Printf("Parsing grammar file failed: %s\n", err)
-		os.Exit(1)
+		failf("Parsing grammar file failed: %s\n", err)
 	}
 
 	if err := grammar.Validate(); err != nil {
-		fmt.Printf("Invalid grammar: %s\n", err)
-		os.Exit(1)
+		failf("Invalid grammar: %s\n", err)
 	}
 
 	fmt.Println("Grammar file parsed.")
 	outputGrammar(grammar)
+
+	result, err := gen.GenerateAll(grammar, *outputPackage)
+	if err != nil {
+		failf("Generation failed: %s\n", err)
+	}
+
+	if err := os.WriteFile(*outputFile, []byte(result), 0o644); err != nil {
+		failf("Unable to save generated file to %s: %s", *outputFile, err)
+	}
+}
+
+func failf(s string, args ...any) {
+	fmt.Printf(s, args...)
+	os.Exit(1)
 }
 
 func parseGrammarFile(file string) (grammar.Grammar, error) {

@@ -112,8 +112,7 @@ func (grammar *Grammar) Validate() error {
 
 func (t *LexTokens) validate() error {
 	for _, t := range t.named {
-		_, err := regexp.CompilePOSIX(t.regexp)
-		if err != nil {
+		if _, err := regexp.CompilePOSIX(t.regexp); err != nil {
 			return fmt.Errorf("invalid regexp %s for named token %s: %w", strconv.Quote(t.regexp), t.name, err)
 		}
 	}
