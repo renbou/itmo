@@ -4,5 +4,6 @@ rules {
   A = B C "b";
   B = "b" C;
   B = ;
+  C = "b";
   C = "c";
 }

@@ -3,7 +3,8 @@ package gen
 import (
 	"bytes"
 	"fmt"
-	"go/format"
+
+	"mvdan.cc/gofumpt/format"
 
 	"ll1gen/grammar"
 )
@@ -27,13 +28,19 @@ func GenerateAll(g grammar.Grammar, pkg string) ([]byte, error) {
 		return nil, fmt.Errorf("generating lexer: %w", err)
 	}
 
-	return constructFile(pkg, lexer, nil)
+	parser, err := generateParser(g.ParseRules, first, follow, tokens)
+	if err != nil {
+		return nil, fmt.Errorf("generating parser: %w", err)
+	}
+
+	return constructFile(pkg, lexer, parser)
 }
 
 func constructFile(pkg string, lexer, parser []byte) ([]byte, error) {
 	var b bytes.Buffer
 	b.WriteString("package " + pkg + "\n")
 	b.WriteString(`import (
+		"errors"
 		"fmt"
 		"regexp"
 		"strconv"
@@ -41,9 +48,10 @@ func constructFile(pkg string, lexer, parser []byte) ([]byte, error) {
 	b.Write(lexer)
 	b.Write(parser)
 
-	formatted, err := format.Source(b.Bytes())
+	formatted, err := format.Source(b.Bytes(), format.Options{})
 	if err != nil {
-		return nil, fmt.Errorf("formatting file: %w", err)
+		fmt.Printf("Warning: cannot format file: %s\n", err)
+		formatted = b.Bytes()
 	}
 	return formatted, nil
 }

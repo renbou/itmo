@@ -27,6 +27,8 @@ var (
 	{{range $id, $t := .tokens}}{{printf "\tregexp.MustCompile(%s),\n\t" $t}}{{end}}}
 
 	whitespaceRegExp = regexp.MustCompile({{.ws}})
+
+	eofTokenID = {{.eof}}
 )
 
 func lex(text string) ([]token, error) {
@@ -69,14 +71,14 @@ func lex(text string) ([]token, error) {
 	if leftover != "" {
 		return nil, fmt.Errorf("unmatched suffix %s left over", strconv.Quote(leftover))
 	}
-	return tokens, nil
+	return append(tokens, token{eofTokenID, "EOF"}), nil
 }
 `))
 
 type tokenSet struct {
 	list     []string
-	literals map[string]int
-	named    map[string]int
+	Literals map[string]int
+	Named    map[string]int
 }
 
 func generateLexer(tokens *tokenSet) ([]byte, error) {
@@ -95,8 +97,12 @@ func generateLexer(tokens *tokenSet) ([]byte, error) {
 		return "`^" + s + "`"
 	})
 
-	if err := lexerTmpl.Execute(&b, map[string]any{"tokens": tokenRegExps, "ws": "`" + whitespaceRegExp + "`"}); err != nil {
-		return nil, err
+	if err := lexerTmpl.Execute(&b, map[string]any{
+		"tokens": tokenRegExps,
+		"ws":     "`" + whitespaceRegExp + "`",
+		"eof":    eofTokenID,
+	}); err != nil {
+		return nil, fmt.Errorf("executing lexer template: %w", err)
 	}
 
 	return b.Bytes(), nil
@@ -104,17 +110,17 @@ func generateLexer(tokens *tokenSet) ([]byte, error) {
 
 func newTokenSet(tokens grammar.LexTokens) *tokenSet {
 	set := &tokenSet{
-		literals: make(map[string]int),
-		named:    make(map[string]int),
+		Literals: make(map[string]int),
+		Named:    make(map[string]int),
 	}
 
 	for _, l := range tokens.Literals {
-		set.literals[l] = len(set.list)
+		set.Literals[l] = len(set.list)
 		set.list = append(set.list, regexp.QuoteMeta(l))
 	}
 
 	for n, r := range tokens.RegExps {
-		set.named[n] = len(set.list)
+		set.Named[n] = len(set.list)
 		set.list = append(set.list, r)
 	}
 
@@ -123,7 +129,7 @@ func newTokenSet(tokens grammar.LexTokens) *tokenSet {
 
 func (s *tokenSet) componentToID(c grammar.ParseRuleComponent) int {
 	if c.Type == grammar.ParseRuleComponentToken {
-		return s.named[c.Value]
+		return s.Named[c.Value]
 	}
-	return s.literals[c.Value]
+	return s.Literals[c.Value]
 }

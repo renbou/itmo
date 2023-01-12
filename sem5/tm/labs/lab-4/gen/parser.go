@@ -1,14 +1,150 @@
 package gen
 
 import (
+	"bytes"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
+	"text/template"
 
 	"ll1gen/grammar"
 
 	"github.com/samber/lo"
 )
+
+var parserTmpl = template.Must(template.New("parser").Parse(`
+{{ $ffsetKeys := .ffsetKeys }}
+{{ $ffsetContainsE := .ffsetContainsE }}
+{{ $joinIDs := .joinIDs }}
+{{ $rules := .rules }}
+{{ $tokens := .tokens }}
+{{ $follow := .follow }}
+
+var ErrNotExhausted = errors.New("not all tokens have been exhausted after parsing")
+
+type parser struct {
+	tokens []token
+	pos    int
+}
+
+func (p *parser) token() token {
+	return p.tokens[p.pos]
+}
+
+func (p *parser) contin() {
+	p.pos++
+}
+
+func (p *parser) errUnexpected(node string) error {
+	return fmt.Errorf("unexpected %s in %s node", p.token().value, node)
+}
+
+{{range $name, $fs := .first}}
+type ParserNode{{$name}} struct {
+	children []any
+}
+
+func (node *ParserNode{{$name}}) Name() string {
+	return "{{$name}}"
+}
+
+func (node *ParserNode{{$name}}) Children() []any {
+	return node.children
+}
+
+func (p *parser) parse{{$name}}() (*ParserNode{{$name}}, error) {
+	var children []any
+
+	switch p.token().id {
+	{{- range $ruleIndex, $ruleFirst := $fs }}
+		{{- $containsE := call $ffsetContainsE $ruleFirst }}
+		{{- if not $containsE }}
+			{{- $transitions := call $ffsetKeys $ruleFirst }}
+			{{- $joinIDs := call $joinIDs $transitions }}
+			case {{ $joinIDs }}:
+				{{- range $component := index $rules $name $ruleIndex }}
+					{{- if eq $component.Type 0 }}
+						if p.token().id != {{ index $tokens.Literals $component.Value }} {
+							return nil, p.errUnexpected("{{$name}}")
+						} else {
+							children = append(children, p.token().value)
+						}
+						p.contin()
+					{{- else if eq $component.Type 1 }}
+						if p.token().id != {{ index $tokens.Named $component.Value }} {
+							return nil, p.errUnexpected("{{$name}}")
+						} else {
+							children = append(children, p.token().value)
+						}
+						p.contin()
+					{{- else }}
+						if child, err := p.parse{{$component.Value}}(); err != nil {
+							return nil, err
+						} else {
+							children = append(children, child)
+						}
+					{{- end }}
+				{{- end }}
+				return &ParserNode{{$name}}{children}, nil
+		{{- else }}
+			{{- $nontermFollow := index $follow $name }}
+			{{- $transitions := call $ffsetKeys $nontermFollow }}
+			{{- $joinIDs := call $joinIDs $transitions }}
+			case {{ $joinIDs }}:
+				return &ParserNode{{$name}}{}, nil
+		{{- end }}
+	{{- end }}
+	default:
+		return nil, p.errUnexpected("{{$name}}")
+	}
+}
+
+func Parse{{$name}}(text string) (*ParserNode{{$name}}, error) {
+	tokens, err := lex(text)
+	if err != nil {
+		return nil, err
+	}
+
+	p := parser{tokens, 0}
+
+	result, err := p.parse{{$name}}()
+	if err != nil {
+		return nil, err
+	}
+
+	if p.pos != len(tokens) - 1 {
+		return nil, ErrNotExhausted
+	}
+	return result, nil
+}
+{{end}}
+`))
+
+func generateParser(rules grammar.ParseRules, first map[string][]ffset, follow map[string]ffset, tokens *tokenSet) ([]byte, error) {
+	var b bytes.Buffer
+
+	err := parserTmpl.Execute(&b, map[string]any{
+		"ffsetKeys": lo.Keys[int, struct{}],
+		"joinIDs": func(ids []int) string {
+			return strings.Join(lo.Map(ids, func(id int, _ int) string {
+				return strconv.Itoa(id)
+			}), ", ")
+		},
+		"ffsetContainsE": func(f ffset) bool {
+			return f.containsE()
+		},
+		"rules":  rules,
+		"first":  first,
+		"follow": follow,
+		"tokens": tokens,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("executing parser template: %w", err)
+	}
+
+	return b.Bytes(), nil
+}
 
 // rulesFirst calculates the FIRST sets for all of the production rules,
 // returning them in the same format as the parser rules
@@ -140,7 +276,7 @@ func nontermFollow(r grammar.ParseRules, start string, tokens *tokenSet, first m
 						// If beta consists solely of non-terminals with EPS',
 						// FIRST(beta) contains EPS, so we need to add this rule's FOLLOW
 						if !bfirst.containsE() {
-							continue
+							break
 						}
 						if betaCI == len(beta)-1 {
 							changed = cf.uniteWith(f[name]) || changed
