@@ -20,6 +20,8 @@ var parserTmpl = template.Must(template.New("parser").Parse(`
 {{ $rules := .rules }}
 {{ $tokens := .tokens }}
 {{ $follow := .follow }}
+{{ $attributes := .attributes }}
+{{ $code := .code }}
 
 var ErrNotExhausted = errors.New("not all tokens have been exhausted after parsing")
 
@@ -43,6 +45,7 @@ func (p *parser) errUnexpected(node string) error {
 {{range $name, $fs := .first}}
 type ParserNode{{$name}} struct {
 	children []any
+	{{ index $attributes $name }}
 }
 
 func (node *ParserNode{{$name}}) Name() string {
@@ -58,12 +61,13 @@ func (p *parser) parse{{$name}}() (*ParserNode{{$name}}, error) {
 
 	switch p.token().id {
 	{{- range $ruleIndex, $ruleFirst := $fs }}
+		{{- $rule := index $rules $name $ruleIndex }}
 		{{- $containsE := call $ffsetContainsE $ruleFirst }}
 		{{- if not $containsE }}
 			{{- $transitions := call $ffsetKeys $ruleFirst }}
 			{{- $joinIDs := call $joinIDs $transitions }}
 			case {{ $joinIDs }}:
-				{{- range $component := index $rules $name $ruleIndex }}
+				{{- range $component := $rule.Components }}
 					{{- if eq $component.Type 0 }}
 						if p.token().id != {{ index $tokens.Literals $component.Value }} {
 							return nil, p.errUnexpected("{{$name}}")
@@ -86,13 +90,22 @@ func (p *parser) parse{{$name}}() (*ParserNode{{$name}}, error) {
 						}
 					{{- end }}
 				{{- end }}
-				return &ParserNode{{$name}}{children}, nil
+
+				node := &ParserNode{{$name}}{children: children}
+
+				{{ call $code $rule }}
+
+				return node, nil
 		{{- else }}
 			{{- $nontermFollow := index $follow $name }}
 			{{- $transitions := call $ffsetKeys $nontermFollow }}
 			{{- $joinIDs := call $joinIDs $transitions }}
 			case {{ $joinIDs }}:
-				return &ParserNode{{$name}}{}, nil
+				node := &ParserNode{{$name}}{}
+
+				{{ call $code $rule }}
+
+				return node, nil
 		{{- end }}
 	{{- end }}
 	default:
@@ -134,16 +147,47 @@ func generateParser(rules grammar.ParseRules, first map[string][]ffset, follow m
 		"ffsetContainsE": func(f ffset) bool {
 			return f.containsE()
 		},
-		"rules":  rules,
-		"first":  first,
-		"follow": follow,
-		"tokens": tokens,
+		"rules":      rules,
+		"first":      first,
+		"follow":     follow,
+		"tokens":     tokens,
+		"attributes": attributes(rules),
+		"code":       code,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("executing parser template: %w", err)
 	}
 
 	return b.Bytes(), nil
+}
+
+// attributes extracts and groups the nonterminal attributes from the grammar
+func attributes(r grammar.ParseRules) map[string]string {
+	return lo.MapValues(r, func(rules []grammar.ParseRule, _ string) string {
+		return strings.Join(lo.Map(rules, func(rule grammar.ParseRule, _ int) string {
+			return rule.Attributes
+		}), "\n")
+	})
+}
+
+// code extracts and builds the code for this parse rule by replacing $0 with node
+// and $n with the n'th child
+func code(r grammar.ParseRule) string {
+	c := strings.ReplaceAll(r.Code, "$0", "node")
+
+	for i, component := range r.Components {
+		result := fmt.Sprintf("node.children[%d]", i)
+
+		if component.Type == grammar.ParseRuleComponentRule {
+			result += fmt.Sprintf(".(*ParserNode%s)", component.Value)
+		}
+		c = strings.ReplaceAll(c,
+			fmt.Sprintf("$%d", i+1),
+			result,
+		)
+	}
+
+	return strings.TrimSpace(c)
 }
 
 // rulesFirst calculates the FIRST sets for all of the production rules,
@@ -166,12 +210,12 @@ func rulesFirst(r grammar.ParseRules, tokens *tokenSet) map[string][]ffset {
 		for name, rules := range r {
 			for i, rule := range rules {
 				// Empty rule == EPS
-				if len(rule) == 0 {
+				if len(rule.Components) == 0 {
 					changed = f[name][i].add(eofTokenID) || changed
 					continue
 				}
 
-				for ci, component := range rule {
+				for ci, component := range rule.Components {
 					// A terminal instantly goes into the FIRST set
 					if component.Type == grammar.ParseRuleComponentLiteral || component.Type == grammar.ParseRuleComponentToken {
 						changed = f[name][i].add(tokens.componentToID(component)) || changed
@@ -190,7 +234,7 @@ func rulesFirst(r grammar.ParseRules, tokens *tokenSet) map[string][]ffset {
 					}
 
 					// All of the components were non-terminals which contained EPS, meaning this rule can also contain EPS
-					if ci == len(rule)-1 {
+					if ci == len(rule.Components)-1 {
 						changed = f[name][i].add(eofTokenID) || changed
 					}
 				}
@@ -247,13 +291,13 @@ func nontermFollow(r grammar.ParseRules, start string, tokens *tokenSet, first m
 
 		for name, rules := range r {
 			for _, rule := range rules {
-				for ci, component := range rule {
+				for ci, component := range rule.Components {
 					// Only inspect sequences like ...Bβ
 					if component.Type != grammar.ParseRuleComponentRule {
 						continue
 					}
 
-					beta := rule[ci+1:]
+					beta := rule.Components[ci+1:]
 					cf := f[component.Value]
 
 					// If this non-terminal is at the end of some rule, we need to add this rule's FOLLOW set

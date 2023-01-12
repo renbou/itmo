@@ -3,22 +3,72 @@ tokens {
 }
 
 rules {
-  LambdaDecl = "lambda" Args ":" Expr;
+  LambdaDecl [ tree map[string][]any ]
+    = "lambda" Args ":" Expr
+    [ $0.tree = map[string][]any{"LambdaDecl": []any{$1, $2.tree, $3, $4.tree}} ]
+    ;
 
-  Args    = ident OptArgs;
-  Args    = ;
-  OptArgs = "," ident OptArgs;
-  OptArgs = ;
 
-  Expr  = Term ExprM;
-  ExprM = "or" Term ExprM;
-  ExprM = ;
-  Term  = Factor TermM;
-  TermM = "and" Factor TermM;
-  TermM = ;
-  Factor = "false";
-  Factor = "true";
-  Factor = ident;
-  Factor = "not" Factor;
-  Factor = "(" Expr ")";
+  Args [ tree map[string][]any ]
+    = ident OptArgs
+    [ $0.tree = map[string][]any{"Args": []any{$1, $2.tree}} ]
+    ;
+  Args
+    =
+    [ $0.tree = map[string][]any{"Args": nil} ]
+    ;
+  OptArgs [ tree map[string][]any ]
+    = "," ident OptArgs
+    [ $0.tree = map[string][]any{"OptArgs": []any{$1, $2, $3.tree}} ]
+    ;
+  OptArgs
+    =
+    [ $0.tree = map[string][]any{"OptArgs": nil} ]
+    ;
+
+
+  Expr [ tree map[string][]any ]
+    = Term ExprM
+    [ $0.tree = map[string][]any{"TermM": []any{$1.tree, $2.tree}} ]
+    ;
+  ExprM [ tree map[string][]any ]
+    = "or" Term ExprM
+    [ $0.tree = map[string][]any{"ExprM": []any{$1, $2.tree, $3.tree}} ]
+    ;
+  ExprM
+    =
+    [ $0.tree = map[string][]any{"ExprM": nil} ]
+    ;
+  Term [ tree map[string][]any ]
+    = Factor TermM
+    [ $0.tree = map[string][]any{"TermM": []any{$1.tree, $2.tree}} ]
+    ;
+  TermM [ tree map[string][]any ]
+    = "and" Factor TermM
+    [ $0.tree = map[string][]any{"TermM": []any{$1, $2.tree, $3.tree}} ]
+    ;
+  TermM
+    =
+    [ $0.tree = map[string][]any{"TermM": nil} ]
+    ;
+  Factor [ tree map[string][]any ]
+    = "false"
+    [ $0.tree = map[string][]any{"Factor": []any{$1}} ]
+    ;
+  Factor
+    = "true"
+    [ $0.tree = map[string][]any{"Factor": []any{$1}} ]
+    ;
+  Factor
+    = ident
+    [ $0.tree = map[string][]any{"Factor": []any{$1}} ]
+    ;
+  Factor
+    = "not" Factor
+    [ $0.tree = map[string][]any{"Factor": []any{$1, $2.tree}} ]
+    ;
+  Factor
+    = "(" Expr ")"
+    [ $0.tree = map[string][]any{"Factor": []any{$1, $2.tree, $3}} ]
+    ;
 }

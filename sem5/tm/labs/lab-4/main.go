@@ -75,7 +75,7 @@ func outputGrammar(g grammar.Grammar) {
 	sort.Strings(ruleNames)
 	for _, name := range ruleNames {
 		for _, rule := range g.ParseRules[name] {
-			fmt.Printf("  %s = %s\n", name, strings.Join(lo.Map(rule, func(c grammar.ParseRuleComponent, _ int) string {
+			fmt.Printf("  %s = %s\n", name, strings.Join(lo.Map(rule.Components, func(c grammar.ParseRuleComponent, _ int) string {
 				if c.Type == grammar.ParseRuleComponentLiteral {
 					return strconv.Quote(c.Value)
 				}

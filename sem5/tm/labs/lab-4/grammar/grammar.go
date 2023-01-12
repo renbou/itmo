@@ -49,7 +49,14 @@ type ParseRuleComponent struct {
 }
 
 // ParseRule describes a grammar's parse rule, consisting of multiple components one after the other.
-type ParseRule []ParseRuleComponent
+type ParseRule struct {
+	// The components building this single rule
+	Components []ParseRuleComponent
+	// Attributes which should be declared in the nonterminal's struct
+	Attributes string
+	// Code which should be executed when the rule is parsed
+	Code string
+}
 
 // ParseRules describes all parse rules of a grammar, consisting of multiple rules linked to names.
 type ParseRules map[string][]ParseRule
@@ -100,7 +107,7 @@ func (grammar *Grammar) Validate() error {
 
 	literals := lo.Flatten(lo.MapToSlice(grammar.ParseRules, func(_ string, rules []ParseRule) []string {
 		return lo.FlatMap(rules, func(r ParseRule, _ int) []string {
-			return lo.FilterMap(r, func(c ParseRuleComponent, _ int) (string, bool) {
+			return lo.FilterMap(r.Components, func(c ParseRuleComponent, _ int) (string, bool) {
 				return c.Value, c.Type == ParseRuleComponentLiteral
 			})
 		})
@@ -151,7 +158,7 @@ func (r ParseRules) validate(tokens LexTokens) error {
 }
 
 func (r ParseRule) validate(name string, rules ParseRules, tokens LexTokens, usedTokens map[string]struct{}) error {
-	for _, component := range r {
+	for _, component := range r.Components {
 		switch component.Type {
 		case ParseRuleComponentToken:
 			if _, ok := tokens.RegExps[component.Value]; !ok {

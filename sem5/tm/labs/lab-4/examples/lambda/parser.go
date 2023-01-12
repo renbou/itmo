@@ -14,6 +14,8 @@ type token struct {
 
 var (
 	tokenRegExps = []*regexp.Regexp{
+		regexp.MustCompile(`^lambda`),
+		regexp.MustCompile(`^:`),
 		regexp.MustCompile(`^,`),
 		regexp.MustCompile(`^or`),
 		regexp.MustCompile(`^and`),
@@ -22,8 +24,6 @@ var (
 		regexp.MustCompile(`^not`),
 		regexp.MustCompile(`^\(`),
 		regexp.MustCompile(`^\)`),
-		regexp.MustCompile(`^lambda`),
-		regexp.MustCompile(`^:`),
 		regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*`),
 	}
 
@@ -96,6 +96,7 @@ func (p *parser) errUnexpected(node string) error {
 
 type ParserNodeArgs struct {
 	children []any
+	tree     map[string][]any
 }
 
 func (node *ParserNodeArgs) Name() string {
@@ -122,9 +123,18 @@ func (p *parser) parseArgs() (*ParserNodeArgs, error) {
 		} else {
 			children = append(children, child)
 		}
-		return &ParserNodeArgs{children}, nil
-	case 9:
-		return &ParserNodeArgs{}, nil
+
+		node := &ParserNodeArgs{children: children}
+
+		node.tree = map[string][]any{"Args": {node.children[0], node.children[1].(*ParserNodeOptArgs).tree}}
+
+		return node, nil
+	case 1:
+		node := &ParserNodeArgs{}
+
+		node.tree = map[string][]any{"Args": nil}
+
+		return node, nil
 	default:
 		return nil, p.errUnexpected("Args")
 	}
@@ -151,6 +161,7 @@ func ParseArgs(text string) (*ParserNodeArgs, error) {
 
 type ParserNodeExpr struct {
 	children []any
+	tree     map[string][]any
 }
 
 func (node *ParserNodeExpr) Name() string {
@@ -165,7 +176,7 @@ func (p *parser) parseExpr() (*ParserNodeExpr, error) {
 	var children []any
 
 	switch p.token().id {
-	case 3, 4, 10, 5, 6:
+	case 5, 6, 10, 7, 8:
 		if child, err := p.parseTerm(); err != nil {
 			return nil, err
 		} else {
@@ -176,7 +187,12 @@ func (p *parser) parseExpr() (*ParserNodeExpr, error) {
 		} else {
 			children = append(children, child)
 		}
-		return &ParserNodeExpr{children}, nil
+
+		node := &ParserNodeExpr{children: children}
+
+		node.tree = map[string][]any{"TermM": {node.children[0].(*ParserNodeTerm).tree, node.children[1].(*ParserNodeExprM).tree}}
+
+		return node, nil
 	default:
 		return nil, p.errUnexpected("Expr")
 	}
@@ -203,6 +219,7 @@ func ParseExpr(text string) (*ParserNodeExpr, error) {
 
 type ParserNodeExprM struct {
 	children []any
+	tree     map[string][]any
 }
 
 func (node *ParserNodeExprM) Name() string {
@@ -217,8 +234,8 @@ func (p *parser) parseExprM() (*ParserNodeExprM, error) {
 	var children []any
 
 	switch p.token().id {
-	case 1:
-		if p.token().id != 1 {
+	case 3:
+		if p.token().id != 3 {
 			return nil, p.errUnexpected("ExprM")
 		} else {
 			children = append(children, p.token().value)
@@ -234,9 +251,18 @@ func (p *parser) parseExprM() (*ParserNodeExprM, error) {
 		} else {
 			children = append(children, child)
 		}
-		return &ParserNodeExprM{children}, nil
-	case 7, -1:
-		return &ParserNodeExprM{}, nil
+
+		node := &ParserNodeExprM{children: children}
+
+		node.tree = map[string][]any{"ExprM": {node.children[0], node.children[1].(*ParserNodeTerm).tree, node.children[2].(*ParserNodeExprM).tree}}
+
+		return node, nil
+	case 9, -1:
+		node := &ParserNodeExprM{}
+
+		node.tree = map[string][]any{"ExprM": nil}
+
+		return node, nil
 	default:
 		return nil, p.errUnexpected("ExprM")
 	}
@@ -263,6 +289,7 @@ func ParseExprM(text string) (*ParserNodeExprM, error) {
 
 type ParserNodeFactor struct {
 	children []any
+	tree     map[string][]any
 }
 
 func (node *ParserNodeFactor) Name() string {
@@ -277,22 +304,32 @@ func (p *parser) parseFactor() (*ParserNodeFactor, error) {
 	var children []any
 
 	switch p.token().id {
-	case 3:
-		if p.token().id != 3 {
+	case 5:
+		if p.token().id != 5 {
 			return nil, p.errUnexpected("Factor")
 		} else {
 			children = append(children, p.token().value)
 		}
 		p.contin()
-		return &ParserNodeFactor{children}, nil
-	case 4:
-		if p.token().id != 4 {
+
+		node := &ParserNodeFactor{children: children}
+
+		node.tree = map[string][]any{"Factor": {node.children[0]}}
+
+		return node, nil
+	case 6:
+		if p.token().id != 6 {
 			return nil, p.errUnexpected("Factor")
 		} else {
 			children = append(children, p.token().value)
 		}
 		p.contin()
-		return &ParserNodeFactor{children}, nil
+
+		node := &ParserNodeFactor{children: children}
+
+		node.tree = map[string][]any{"Factor": {node.children[0]}}
+
+		return node, nil
 	case 10:
 		if p.token().id != 10 {
 			return nil, p.errUnexpected("Factor")
@@ -300,9 +337,14 @@ func (p *parser) parseFactor() (*ParserNodeFactor, error) {
 			children = append(children, p.token().value)
 		}
 		p.contin()
-		return &ParserNodeFactor{children}, nil
-	case 5:
-		if p.token().id != 5 {
+
+		node := &ParserNodeFactor{children: children}
+
+		node.tree = map[string][]any{"Factor": {node.children[0]}}
+
+		return node, nil
+	case 7:
+		if p.token().id != 7 {
 			return nil, p.errUnexpected("Factor")
 		} else {
 			children = append(children, p.token().value)
@@ -313,9 +355,14 @@ func (p *parser) parseFactor() (*ParserNodeFactor, error) {
 		} else {
 			children = append(children, child)
 		}
-		return &ParserNodeFactor{children}, nil
-	case 6:
-		if p.token().id != 6 {
+
+		node := &ParserNodeFactor{children: children}
+
+		node.tree = map[string][]any{"Factor": {node.children[0], node.children[1].(*ParserNodeFactor).tree}}
+
+		return node, nil
+	case 8:
+		if p.token().id != 8 {
 			return nil, p.errUnexpected("Factor")
 		} else {
 			children = append(children, p.token().value)
@@ -326,13 +373,18 @@ func (p *parser) parseFactor() (*ParserNodeFactor, error) {
 		} else {
 			children = append(children, child)
 		}
-		if p.token().id != 7 {
+		if p.token().id != 9 {
 			return nil, p.errUnexpected("Factor")
 		} else {
 			children = append(children, p.token().value)
 		}
 		p.contin()
-		return &ParserNodeFactor{children}, nil
+
+		node := &ParserNodeFactor{children: children}
+
+		node.tree = map[string][]any{"Factor": {node.children[0], node.children[1].(*ParserNodeExpr).tree, node.children[2]}}
+
+		return node, nil
 	default:
 		return nil, p.errUnexpected("Factor")
 	}
@@ -359,6 +411,7 @@ func ParseFactor(text string) (*ParserNodeFactor, error) {
 
 type ParserNodeLambdaDecl struct {
 	children []any
+	tree     map[string][]any
 }
 
 func (node *ParserNodeLambdaDecl) Name() string {
@@ -373,8 +426,8 @@ func (p *parser) parseLambdaDecl() (*ParserNodeLambdaDecl, error) {
 	var children []any
 
 	switch p.token().id {
-	case 8:
-		if p.token().id != 8 {
+	case 0:
+		if p.token().id != 0 {
 			return nil, p.errUnexpected("LambdaDecl")
 		} else {
 			children = append(children, p.token().value)
@@ -385,7 +438,7 @@ func (p *parser) parseLambdaDecl() (*ParserNodeLambdaDecl, error) {
 		} else {
 			children = append(children, child)
 		}
-		if p.token().id != 9 {
+		if p.token().id != 1 {
 			return nil, p.errUnexpected("LambdaDecl")
 		} else {
 			children = append(children, p.token().value)
@@ -396,7 +449,12 @@ func (p *parser) parseLambdaDecl() (*ParserNodeLambdaDecl, error) {
 		} else {
 			children = append(children, child)
 		}
-		return &ParserNodeLambdaDecl{children}, nil
+
+		node := &ParserNodeLambdaDecl{children: children}
+
+		node.tree = map[string][]any{"LambdaDecl": {node.children[0], node.children[1].(*ParserNodeArgs).tree, node.children[2], node.children[3].(*ParserNodeExpr).tree}}
+
+		return node, nil
 	default:
 		return nil, p.errUnexpected("LambdaDecl")
 	}
@@ -423,6 +481,7 @@ func ParseLambdaDecl(text string) (*ParserNodeLambdaDecl, error) {
 
 type ParserNodeOptArgs struct {
 	children []any
+	tree     map[string][]any
 }
 
 func (node *ParserNodeOptArgs) Name() string {
@@ -437,8 +496,8 @@ func (p *parser) parseOptArgs() (*ParserNodeOptArgs, error) {
 	var children []any
 
 	switch p.token().id {
-	case 0:
-		if p.token().id != 0 {
+	case 2:
+		if p.token().id != 2 {
 			return nil, p.errUnexpected("OptArgs")
 		} else {
 			children = append(children, p.token().value)
@@ -455,9 +514,18 @@ func (p *parser) parseOptArgs() (*ParserNodeOptArgs, error) {
 		} else {
 			children = append(children, child)
 		}
-		return &ParserNodeOptArgs{children}, nil
-	case 9:
-		return &ParserNodeOptArgs{}, nil
+
+		node := &ParserNodeOptArgs{children: children}
+
+		node.tree = map[string][]any{"OptArgs": {node.children[0], node.children[1], node.children[2].(*ParserNodeOptArgs).tree}}
+
+		return node, nil
+	case 1:
+		node := &ParserNodeOptArgs{}
+
+		node.tree = map[string][]any{"OptArgs": nil}
+
+		return node, nil
 	default:
 		return nil, p.errUnexpected("OptArgs")
 	}
@@ -484,6 +552,7 @@ func ParseOptArgs(text string) (*ParserNodeOptArgs, error) {
 
 type ParserNodeTerm struct {
 	children []any
+	tree     map[string][]any
 }
 
 func (node *ParserNodeTerm) Name() string {
@@ -498,7 +567,7 @@ func (p *parser) parseTerm() (*ParserNodeTerm, error) {
 	var children []any
 
 	switch p.token().id {
-	case 4, 10, 5, 6, 3:
+	case 5, 6, 10, 7, 8:
 		if child, err := p.parseFactor(); err != nil {
 			return nil, err
 		} else {
@@ -509,7 +578,12 @@ func (p *parser) parseTerm() (*ParserNodeTerm, error) {
 		} else {
 			children = append(children, child)
 		}
-		return &ParserNodeTerm{children}, nil
+
+		node := &ParserNodeTerm{children: children}
+
+		node.tree = map[string][]any{"TermM": {node.children[0].(*ParserNodeFactor).tree, node.children[1].(*ParserNodeTermM).tree}}
+
+		return node, nil
 	default:
 		return nil, p.errUnexpected("Term")
 	}
@@ -536,6 +610,7 @@ func ParseTerm(text string) (*ParserNodeTerm, error) {
 
 type ParserNodeTermM struct {
 	children []any
+	tree     map[string][]any
 }
 
 func (node *ParserNodeTermM) Name() string {
@@ -550,8 +625,8 @@ func (p *parser) parseTermM() (*ParserNodeTermM, error) {
 	var children []any
 
 	switch p.token().id {
-	case 2:
-		if p.token().id != 2 {
+	case 4:
+		if p.token().id != 4 {
 			return nil, p.errUnexpected("TermM")
 		} else {
 			children = append(children, p.token().value)
@@ -567,9 +642,18 @@ func (p *parser) parseTermM() (*ParserNodeTermM, error) {
 		} else {
 			children = append(children, child)
 		}
-		return &ParserNodeTermM{children}, nil
-	case -1, 1, 7:
-		return &ParserNodeTermM{}, nil
+
+		node := &ParserNodeTermM{children: children}
+
+		node.tree = map[string][]any{"TermM": {node.children[0], node.children[1].(*ParserNodeFactor).tree, node.children[2].(*ParserNodeTermM).tree}}
+
+		return node, nil
+	case 3, 9, -1:
+		node := &ParserNodeTermM{}
+
+		node.tree = map[string][]any{"TermM": nil}
+
+		return node, nil
 	default:
 		return nil, p.errUnexpected("TermM")
 	}

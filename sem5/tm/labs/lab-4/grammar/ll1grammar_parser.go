@@ -9,6 +9,8 @@ import (
 	"github.com/antlr/antlr4/runtime/Go/antlr/v4"
 )
 
+import "strings"
+
 // Suppress unused import errors
 var _ = fmt.Printf
 var _ = strconv.Itoa
@@ -35,7 +37,8 @@ func ll1grammarParserInit() {
 		"", "'tokens'", "'{'", "'}'", "'='", "';'", "'rules'",
 	}
 	staticData.symbolicNames = []string{
-		"", "", "", "", "", "", "", "Literal", "TokenIdent", "RuleIdent", "Whitespace",
+		"", "", "", "", "", "", "", "Code", "Literal", "TokenIdent", "RuleIdent",
+		"Whitespace",
 	}
 	staticData.ruleNames = []string{
 		"ll1Grammar", "ll1Tokens", "optionalTokensNamed", "ll1Rules", "allRules",
@@ -43,35 +46,38 @@ func ll1grammarParserInit() {
 	}
 	staticData.predictionContextCache = antlr.NewPredictionContextCache()
 	staticData.serializedATN = []int32{
-		4, 1, 10, 78, 2, 0, 7, 0, 2, 1, 7, 1, 2, 2, 7, 2, 2, 3, 7, 3, 2, 4, 7,
+		4, 1, 11, 84, 2, 0, 7, 0, 2, 1, 7, 1, 2, 2, 7, 2, 2, 3, 7, 3, 2, 4, 7,
 		4, 2, 5, 7, 5, 2, 6, 7, 6, 2, 7, 7, 7, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1,
 		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1,
 		2, 3, 2, 35, 8, 2, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 4, 1, 4, 1, 4,
 		1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 5, 4, 53, 8, 4, 10, 4, 12, 4,
-		56, 9, 4, 1, 5, 1, 5, 1, 5, 1, 5, 1, 5, 1, 6, 1, 6, 1, 6, 1, 6, 1, 6, 3,
-		6, 68, 8, 6, 1, 7, 1, 7, 1, 7, 1, 7, 1, 7, 1, 7, 3, 7, 76, 8, 7, 1, 7,
-		0, 1, 8, 8, 0, 2, 4, 6, 8, 10, 12, 14, 0, 0, 74, 0, 16, 1, 0, 0, 0, 2,
-		20, 1, 0, 0, 0, 4, 34, 1, 0, 0, 0, 6, 36, 1, 0, 0, 0, 8, 42, 1, 0, 0, 0,
-		10, 57, 1, 0, 0, 0, 12, 67, 1, 0, 0, 0, 14, 75, 1, 0, 0, 0, 16, 17, 3,
-		2, 1, 0, 17, 18, 3, 6, 3, 0, 18, 19, 6, 0, -1, 0, 19, 1, 1, 0, 0, 0, 20,
-		21, 5, 1, 0, 0, 21, 22, 5, 2, 0, 0, 22, 23, 3, 4, 2, 0, 23, 24, 5, 3, 0,
-		0, 24, 25, 6, 1, -1, 0, 25, 3, 1, 0, 0, 0, 26, 27, 5, 8, 0, 0, 27, 28,
-		5, 4, 0, 0, 28, 29, 5, 7, 0, 0, 29, 30, 5, 5, 0, 0, 30, 31, 3, 4, 2, 0,
-		31, 32, 6, 2, -1, 0, 32, 35, 1, 0, 0, 0, 33, 35, 6, 2, -1, 0, 34, 26, 1,
-		0, 0, 0, 34, 33, 1, 0, 0, 0, 35, 5, 1, 0, 0, 0, 36, 37, 5, 6, 0, 0, 37,
-		38, 5, 2, 0, 0, 38, 39, 3, 8, 4, 0, 39, 40, 5, 3, 0, 0, 40, 41, 6, 3, -1,
-		0, 41, 7, 1, 0, 0, 0, 42, 43, 6, 4, -1, 0, 43, 44, 3, 10, 5, 0, 44, 45,
-		5, 5, 0, 0, 45, 46, 6, 4, -1, 0, 46, 54, 1, 0, 0, 0, 47, 48, 10, 2, 0,
-		0, 48, 49, 3, 10, 5, 0, 49, 50, 5, 5, 0, 0, 50, 51, 6, 4, -1, 0, 51, 53,
-		1, 0, 0, 0, 52, 47, 1, 0, 0, 0, 53, 56, 1, 0, 0, 0, 54, 52, 1, 0, 0, 0,
-		54, 55, 1, 0, 0, 0, 55, 9, 1, 0, 0, 0, 56, 54, 1, 0, 0, 0, 57, 58, 5, 9,
-		0, 0, 58, 59, 5, 4, 0, 0, 59, 60, 3, 12, 6, 0, 60, 61, 6, 5, -1, 0, 61,
-		11, 1, 0, 0, 0, 62, 63, 3, 14, 7, 0, 63, 64, 3, 12, 6, 0, 64, 65, 6, 6,
-		-1, 0, 65, 68, 1, 0, 0, 0, 66, 68, 6, 6, -1, 0, 67, 62, 1, 0, 0, 0, 67,
-		66, 1, 0, 0, 0, 68, 13, 1, 0, 0, 0, 69, 70, 5, 7, 0, 0, 70, 76, 6, 7, -1,
-		0, 71, 72, 5, 8, 0, 0, 72, 76, 6, 7, -1, 0, 73, 74, 5, 9, 0, 0, 74, 76,
-		6, 7, -1, 0, 75, 69, 1, 0, 0, 0, 75, 71, 1, 0, 0, 0, 75, 73, 1, 0, 0, 0,
-		76, 15, 1, 0, 0, 0, 4, 34, 54, 67, 75,
+		56, 9, 4, 1, 5, 1, 5, 3, 5, 60, 8, 5, 1, 5, 1, 5, 1, 5, 3, 5, 65, 8, 5,
+		1, 5, 1, 5, 1, 6, 1, 6, 1, 6, 1, 6, 1, 6, 3, 6, 74, 8, 6, 1, 7, 1, 7, 1,
+		7, 1, 7, 1, 7, 1, 7, 3, 7, 82, 8, 7, 1, 7, 0, 1, 8, 8, 0, 2, 4, 6, 8, 10,
+		12, 14, 0, 0, 82, 0, 16, 1, 0, 0, 0, 2, 20, 1, 0, 0, 0, 4, 34, 1, 0, 0,
+		0, 6, 36, 1, 0, 0, 0, 8, 42, 1, 0, 0, 0, 10, 57, 1, 0, 0, 0, 12, 73, 1,
+		0, 0, 0, 14, 81, 1, 0, 0, 0, 16, 17, 3, 2, 1, 0, 17, 18, 3, 6, 3, 0, 18,
+		19, 6, 0, -1, 0, 19, 1, 1, 0, 0, 0, 20, 21, 5, 1, 0, 0, 21, 22, 5, 2, 0,
+		0, 22, 23, 3, 4, 2, 0, 23, 24, 5, 3, 0, 0, 24, 25, 6, 1, -1, 0, 25, 3,
+		1, 0, 0, 0, 26, 27, 5, 9, 0, 0, 27, 28, 5, 4, 0, 0, 28, 29, 5, 8, 0, 0,
+		29, 30, 5, 5, 0, 0, 30, 31, 3, 4, 2, 0, 31, 32, 6, 2, -1, 0, 32, 35, 1,
+		0, 0, 0, 33, 35, 6, 2, -1, 0, 34, 26, 1, 0, 0, 0, 34, 33, 1, 0, 0, 0, 35,
+		5, 1, 0, 0, 0, 36, 37, 5, 6, 0, 0, 37, 38, 5, 2, 0, 0, 38, 39, 3, 8, 4,
+		0, 39, 40, 5, 3, 0, 0, 40, 41, 6, 3, -1, 0, 41, 7, 1, 0, 0, 0, 42, 43,
+		6, 4, -1, 0, 43, 44, 3, 10, 5, 0, 44, 45, 5, 5, 0, 0, 45, 46, 6, 4, -1,
+		0, 46, 54, 1, 0, 0, 0, 47, 48, 10, 2, 0, 0, 48, 49, 3, 10, 5, 0, 49, 50,
+		5, 5, 0, 0, 50, 51, 6, 4, -1, 0, 51, 53, 1, 0, 0, 0, 52, 47, 1, 0, 0, 0,
+		53, 56, 1, 0, 0, 0, 54, 52, 1, 0, 0, 0, 54, 55, 1, 0, 0, 0, 55, 9, 1, 0,
+		0, 0, 56, 54, 1, 0, 0, 0, 57, 59, 5, 10, 0, 0, 58, 60, 5, 7, 0, 0, 59,
+		58, 1, 0, 0, 0, 59, 60, 1, 0, 0, 0, 60, 61, 1, 0, 0, 0, 61, 62, 5, 4, 0,
+		0, 62, 64, 3, 12, 6, 0, 63, 65, 5, 7, 0, 0, 64, 63, 1, 0, 0, 0, 64, 65,
+		1, 0, 0, 0, 65, 66, 1, 0, 0, 0, 66, 67, 6, 5, -1, 0, 67, 11, 1, 0, 0, 0,
+		68, 69, 3, 14, 7, 0, 69, 70, 3, 12, 6, 0, 70, 71, 6, 6, -1, 0, 71, 74,
+		1, 0, 0, 0, 72, 74, 6, 6, -1, 0, 73, 68, 1, 0, 0, 0, 73, 72, 1, 0, 0, 0,
+		74, 13, 1, 0, 0, 0, 75, 76, 5, 8, 0, 0, 76, 82, 6, 7, -1, 0, 77, 78, 5,
+		9, 0, 0, 78, 82, 6, 7, -1, 0, 79, 80, 5, 10, 0, 0, 80, 82, 6, 7, -1, 0,
+		81, 75, 1, 0, 0, 0, 81, 77, 1, 0, 0, 0, 81, 79, 1, 0, 0, 0, 82, 15, 1,
+		0, 0, 0, 6, 34, 54, 59, 64, 73, 81,
 	}
 	deserializer := antlr.NewATNDeserializer(nil)
 	staticData.atn = deserializer.Deserialize(staticData.serializedATN)
@@ -116,10 +122,11 @@ const (
 	LL1GrammarParserT__3       = 4
 	LL1GrammarParserT__4       = 5
 	LL1GrammarParserT__5       = 6
-	LL1GrammarParserLiteral    = 7
-	LL1GrammarParserTokenIdent = 8
-	LL1GrammarParserRuleIdent  = 9
-	LL1GrammarParserWhitespace = 10
+	LL1GrammarParserCode       = 7
+	LL1GrammarParserLiteral    = 8
+	LL1GrammarParserTokenIdent = 9
+	LL1GrammarParserRuleIdent  = 10
+	LL1GrammarParserWhitespace = 11
 )
 
 // LL1GrammarParser rules.
@@ -926,7 +933,7 @@ func (p *LL1GrammarParser) allRules(_p int) (localctx IAllRulesContext) {
 	}
 
 	localctx.(*AllRulesContext).SetStartNonTerm(localctx.(*AllRulesContext).GetR().GetName())
-	localctx.(*AllRulesContext).SetRules(ParseRules{localctx.(*AllRulesContext).GetR().GetName(): []ParseRule{localctx.(*AllRulesContext).GetR().GetComponents()}})
+	localctx.(*AllRulesContext).SetRules(ParseRules{localctx.(*AllRulesContext).GetR().GetName(): []ParseRule{localctx.(*AllRulesContext).GetR().GetRule_()}})
 
 	p.GetParserRuleContext().SetStop(p.GetTokenStream().LT(-1))
 	p.SetState(54)
@@ -961,7 +968,7 @@ func (p *LL1GrammarParser) allRules(_p int) (localctx IAllRulesContext) {
 
 			localctx.(*AllRulesContext).SetStartNonTerm(localctx.(*AllRulesContext).GetRest().GetStartNonTerm())
 			localctx.(*AllRulesContext).SetRules(localctx.(*AllRulesContext).GetRest().GetRules())
-			localctx.(*AllRulesContext).rules[localctx.(*AllRulesContext).GetR().GetName()] = append(localctx.(*AllRulesContext).rules[localctx.(*AllRulesContext).GetR().GetName()], localctx.(*AllRulesContext).GetR().GetComponents())
+			localctx.(*AllRulesContext).rules[localctx.(*AllRulesContext).GetR().GetName()] = append(localctx.(*AllRulesContext).rules[localctx.(*AllRulesContext).GetR().GetName()], localctx.(*AllRulesContext).GetR().GetRule_())
 
 		}
 		p.SetState(56)
@@ -982,8 +989,20 @@ type ISingleRuleContext interface {
 	// GetN returns the n token.
 	GetN() antlr.Token
 
+	// GetAttributes returns the attributes token.
+	GetAttributes() antlr.Token
+
+	// GetCode returns the code token.
+	GetCode() antlr.Token
+
 	// SetN sets the n token.
 	SetN(antlr.Token)
+
+	// SetAttributes sets the attributes token.
+	SetAttributes(antlr.Token)
+
+	// SetCode sets the code token.
+	SetCode(antlr.Token)
 
 	// GetC returns the c rule contexts.
 	GetC() IRuleComponentListContext
@@ -994,14 +1013,14 @@ type ISingleRuleContext interface {
 	// GetName returns the name attribute.
 	GetName() string
 
-	// GetComponents returns the components attribute.
-	GetComponents() []ParseRuleComponent
+	// GetRule_ returns the rule_ attribute.
+	GetRule_() ParseRule
 
 	// SetName sets the name attribute.
 	SetName(string)
 
-	// SetComponents sets the components attribute.
-	SetComponents([]ParseRuleComponent)
+	// SetRule_ sets the rule_ attribute.
+	SetRule_(ParseRule)
 
 	// IsSingleRuleContext differentiates from other interfaces.
 	IsSingleRuleContext()
@@ -1011,9 +1030,11 @@ type SingleRuleContext struct {
 	*antlr.BaseParserRuleContext
 	parser     antlr.Parser
 	name       string
-	components []ParseRuleComponent
+	rule_      ParseRule
 	n          antlr.Token
+	attributes antlr.Token
 	c          IRuleComponentListContext
+	code       antlr.Token
 }
 
 func NewEmptySingleRuleContext() *SingleRuleContext {
@@ -1040,7 +1061,15 @@ func (s *SingleRuleContext) GetParser() antlr.Parser { return s.parser }
 
 func (s *SingleRuleContext) GetN() antlr.Token { return s.n }
 
+func (s *SingleRuleContext) GetAttributes() antlr.Token { return s.attributes }
+
+func (s *SingleRuleContext) GetCode() antlr.Token { return s.code }
+
 func (s *SingleRuleContext) SetN(v antlr.Token) { s.n = v }
+
+func (s *SingleRuleContext) SetAttributes(v antlr.Token) { s.attributes = v }
+
+func (s *SingleRuleContext) SetCode(v antlr.Token) { s.code = v }
 
 func (s *SingleRuleContext) GetC() IRuleComponentListContext { return s.c }
 
@@ -1048,11 +1077,11 @@ func (s *SingleRuleContext) SetC(v IRuleComponentListContext) { s.c = v }
 
 func (s *SingleRuleContext) GetName() string { return s.name }
 
-func (s *SingleRuleContext) GetComponents() []ParseRuleComponent { return s.components }
+func (s *SingleRuleContext) GetRule_() ParseRule { return s.rule_ }
 
 func (s *SingleRuleContext) SetName(v string) { s.name = v }
 
-func (s *SingleRuleContext) SetComponents(v []ParseRuleComponent) { s.components = v }
+func (s *SingleRuleContext) SetRule_(v ParseRule) { s.rule_ = v }
 
 func (s *SingleRuleContext) RuleIdent() antlr.TerminalNode {
 	return s.GetToken(LL1GrammarParserRuleIdent, 0)
@@ -1074,6 +1103,14 @@ func (s *SingleRuleContext) RuleComponentList() IRuleComponentListContext {
 	return t.(IRuleComponentListContext)
 }
 
+func (s *SingleRuleContext) AllCode() []antlr.TerminalNode {
+	return s.GetTokens(LL1GrammarParserCode)
+}
+
+func (s *SingleRuleContext) Code(i int) antlr.TerminalNode {
+	return s.GetToken(LL1GrammarParserCode, i)
+}
+
 func (s *SingleRuleContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
@@ -1088,6 +1125,7 @@ func (p *LL1GrammarParser) SingleRule() (localctx ISingleRuleContext) {
 
 	localctx = NewSingleRuleContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 10, LL1GrammarParserRULE_singleRule)
+	var _la int
 
 	defer func() {
 		p.ExitRule()
@@ -1113,16 +1151,44 @@ func (p *LL1GrammarParser) SingleRule() (localctx ISingleRuleContext) {
 
 		localctx.(*SingleRuleContext).n = _m
 	}
+	p.SetState(59)
+	p.GetErrorHandler().Sync(p)
+	_la = p.GetTokenStream().LA(1)
+
+	if _la == LL1GrammarParserCode {
+		{
+			p.SetState(58)
+
+			var _m = p.Match(LL1GrammarParserCode)
+
+			localctx.(*SingleRuleContext).attributes = _m
+		}
+
+	}
 	{
-		p.SetState(58)
+		p.SetState(61)
 		p.Match(LL1GrammarParserT__3)
 	}
 	{
-		p.SetState(59)
+		p.SetState(62)
 
 		var _x = p.RuleComponentList()
 
 		localctx.(*SingleRuleContext).c = _x
+	}
+	p.SetState(64)
+	p.GetErrorHandler().Sync(p)
+	_la = p.GetTokenStream().LA(1)
+
+	if _la == LL1GrammarParserCode {
+		{
+			p.SetState(63)
+
+			var _m = p.Match(LL1GrammarParserCode)
+
+			localctx.(*SingleRuleContext).code = _m
+		}
+
 	}
 
 	localctx.(*SingleRuleContext).SetName((func() string {
@@ -1132,7 +1198,23 @@ func (p *LL1GrammarParser) SingleRule() (localctx ISingleRuleContext) {
 			return localctx.(*SingleRuleContext).GetN().GetText()
 		}
 	}()))
-	localctx.(*SingleRuleContext).SetComponents(localctx.(*SingleRuleContext).GetC().GetComponents())
+	localctx.(*SingleRuleContext).SetRule_(ParseRule{
+		Components: localctx.(*SingleRuleContext).GetC().GetComponents(),
+		Attributes: strings.TrimPrefix(strings.TrimSuffix((func() string {
+			if localctx.(*SingleRuleContext).GetAttributes() == nil {
+				return ""
+			} else {
+				return localctx.(*SingleRuleContext).GetAttributes().GetText()
+			}
+		}()), "]"), "["),
+		Code: strings.TrimPrefix(strings.TrimSuffix((func() string {
+			if localctx.(*SingleRuleContext).GetCode() == nil {
+				return ""
+			} else {
+				return localctx.(*SingleRuleContext).GetCode().GetText()
+			}
+		}()), "]"), "["),
+	})
 
 	return localctx
 }
@@ -1271,21 +1353,21 @@ func (p *LL1GrammarParser) RuleComponentList() (localctx IRuleComponentListConte
 		}
 	}()
 
-	p.SetState(67)
+	p.SetState(73)
 	p.GetErrorHandler().Sync(p)
 
 	switch p.GetTokenStream().LA(1) {
 	case LL1GrammarParserLiteral, LL1GrammarParserTokenIdent, LL1GrammarParserRuleIdent:
 		p.EnterOuterAlt(localctx, 1)
 		{
-			p.SetState(62)
+			p.SetState(68)
 
 			var _x = p.RuleComponent()
 
 			localctx.(*RuleComponentListContext).c = _x
 		}
 		{
-			p.SetState(63)
+			p.SetState(69)
 
 			var _x = p.RuleComponentList()
 
@@ -1293,7 +1375,7 @@ func (p *LL1GrammarParser) RuleComponentList() (localctx IRuleComponentListConte
 		}
 		localctx.(*RuleComponentListContext).SetComponents(append([]ParseRuleComponent{localctx.(*RuleComponentListContext).GetC().GetComponent()}, localctx.(*RuleComponentListContext).GetRest().GetComponents()...))
 
-	case LL1GrammarParserT__4:
+	case LL1GrammarParserT__4, LL1GrammarParserCode:
 		p.EnterOuterAlt(localctx, 2)
 		localctx.(*RuleComponentListContext).SetComponents(nil)
 
@@ -1429,14 +1511,14 @@ func (p *LL1GrammarParser) RuleComponent() (localctx IRuleComponentContext) {
 		}
 	}()
 
-	p.SetState(75)
+	p.SetState(81)
 	p.GetErrorHandler().Sync(p)
 
 	switch p.GetTokenStream().LA(1) {
 	case LL1GrammarParserLiteral:
 		p.EnterOuterAlt(localctx, 1)
 		{
-			p.SetState(69)
+			p.SetState(75)
 
 			var _m = p.Match(LL1GrammarParserLiteral)
 
@@ -1447,7 +1529,7 @@ func (p *LL1GrammarParser) RuleComponent() (localctx IRuleComponentContext) {
 	case LL1GrammarParserTokenIdent:
 		p.EnterOuterAlt(localctx, 2)
 		{
-			p.SetState(71)
+			p.SetState(77)
 
 			var _m = p.Match(LL1GrammarParserTokenIdent)
 
@@ -1464,7 +1546,7 @@ func (p *LL1GrammarParser) RuleComponent() (localctx IRuleComponentContext) {
 	case LL1GrammarParserRuleIdent:
 		p.EnterOuterAlt(localctx, 3)
 		{
-			p.SetState(73)
+			p.SetState(79)
 
 			var _m = p.Match(LL1GrammarParserRuleIdent)
 
