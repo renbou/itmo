@@ -56,7 +56,7 @@ func (node *ParserNode{{$name}}) Children() []any {
 	return node.children
 }
 
-func (p *parser) parse{{$name}}() (*ParserNode{{$name}}, error) {
+func (p *parser) parse{{$name}}(node *ParserNode{{$name}}) (*ParserNode{{$name}}, error) {
 	var children []any
 
 	switch p.token().id {
@@ -83,7 +83,7 @@ func (p *parser) parse{{$name}}() (*ParserNode{{$name}}, error) {
 						}
 						p.contin()
 					{{- else }}
-						if child, err := p.parse{{$component.Value}}(); err != nil {
+						if child, err := p.parse{{$component.Value}}(&ParserNode{{$component.Value}}{ {{- call $code $component.Args $rule -}} }); err != nil {
 							return nil, err
 						} else {
 							children = append(children, child)
@@ -91,9 +91,9 @@ func (p *parser) parse{{$name}}() (*ParserNode{{$name}}, error) {
 					{{- end }}
 				{{- end }}
 
-				node := &ParserNode{{$name}}{children: children}
+				node.children = children
 
-				{{ call $code $rule }}
+				{{ call $code $rule.Code $rule }}
 
 				return node, nil
 		{{- else }}
@@ -101,9 +101,7 @@ func (p *parser) parse{{$name}}() (*ParserNode{{$name}}, error) {
 			{{- $transitions := call $ffsetKeys $nontermFollow }}
 			{{- $joinIDs := call $joinIDs $transitions }}
 			case {{ $joinIDs }}:
-				node := &ParserNode{{$name}}{}
-
-				{{ call $code $rule }}
+				{{ call $code $rule.Code $rule }}
 
 				return node, nil
 		{{- end }}
@@ -121,7 +119,7 @@ func Parse{{$name}}(text string) (*ParserNode{{$name}}, error) {
 
 	p := parser{tokens, 0}
 
-	result, err := p.parse{{$name}}()
+	result, err := p.parse{{$name}}(&ParserNode{{$name}}{})
 	if err != nil {
 		return nil, err
 	}
@@ -172,15 +170,18 @@ func attributes(r grammar.ParseRules) map[string]string {
 
 // code extracts and builds the code for this parse rule by replacing $0 with node
 // and $n with the n'th child
-func code(r grammar.ParseRule) string {
-	c := strings.ReplaceAll(r.Code, "$0", "node")
+func code(c string, r grammar.ParseRule) string {
+	c = strings.ReplaceAll(c, "$0", "node")
 
 	for i, component := range r.Components {
-		result := fmt.Sprintf("node.children[%d]", i)
+		result := fmt.Sprintf("children[%d]", i)
 
 		if component.Type == grammar.ParseRuleComponentRule {
 			result += fmt.Sprintf(".(*ParserNode%s)", component.Value)
+		} else {
+			result += ".(string)"
 		}
+
 		c = strings.ReplaceAll(c,
 			fmt.Sprintf("$%d", i+1),
 			result,

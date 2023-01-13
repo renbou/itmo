@@ -16,8 +16,11 @@ ANTLR=$(BIN_DIR)/antlr.jar
 
 generate: .generate-grammar
 
+install: generate
+	go install ll1gen
+
 run-examples:
 	echo "Example of FIRST/FIRST conflict" &&\
-	go run ./main.go -i ./examples/first-first-conflict.ll1 ||\
+	go run ./main.go -i ./examples/conflicts/first-first-conflict.ll1 ||\
 	echo "\n\nExample of FIRST/FOLLOW conflict" &&\
-	go run ./main.go -i ./examples/first-follow-conflict.ll1
+	go run ./main.go -i ./examples/conflicts/first-follow-conflict.ll1

@@ -2,10 +2,24 @@ grammar LL1Grammar;
 
 @parser::header {
   import "strings"
+
+  func trimBlock(block, l, r string) string {
+    return strings.TrimPrefix(strings.TrimSuffix(block, r), l)
+  }
+
+  func trimCode(code string) string {
+    return trimBlock(code, "[", "]")
+  }
+
+  func trimArgs(args string) string {
+    return trimBlock(args, "<", ">")
+  }
 }
 
 ll1Grammar returns [Grammar grammar]
-  : t=ll1Tokens r=ll1Rules {$grammar = Grammar{LexTokens: $t.tokens, StartNonTerminal: $r.startNonTerm, ParseRules: $r.rules}; }
+  : h=Code? t=ll1Tokens r=ll1Rules {
+      $grammar = Grammar{Header: trimCode($h.text), LexTokens: $t.tokens, StartNonTerminal: $r.startNonTerm, ParseRules: $r.rules};
+    }
   ;
 
 ll1Tokens returns [LexTokens tokens]
@@ -45,8 +59,8 @@ singleRule returns [string name, ParseRule rule]
       $name = $n.text;
       $rule = ParseRule{
         Components: $c.components,
-        Attributes: strings.TrimPrefix(strings.TrimSuffix($attributes.text, "]"), "["),
-        Code: strings.TrimPrefix(strings.TrimSuffix($code.text, "]"), "["),
+        Attributes: trimCode($attributes.text),
+        Code: trimCode($code.text),
       };
     }
   ;
@@ -59,11 +73,14 @@ ruleComponentList returns [[]ParseRuleComponent components]
 ruleComponent returns [ParseRuleComponent component]
   : l=Literal { $component = ParseRuleComponent{Type: ParseRuleComponentLiteral, Value: literalValue($l)}; }
   | t=TokenIdent { $component = ParseRuleComponent{Type: ParseRuleComponentToken, Value: $t.text}; }
-  | r=RuleIdent { $component = ParseRuleComponent{Type: ParseRuleComponentRule, Value: $r.text}; }
+  | r=RuleIdent a=Args? { $component = ParseRuleComponent{Type: ParseRuleComponentRule, Value: $r.text, Args: trimArgs($a.text)}; }
   ;
 
 Code : '[' CodeBlock* ']' ;
 fragment CodeBlock : ~[[\]]+ | '[' CodeBlock* ']' ;
+
+Args : '<' ArgBlock* '>' ;
+fragment ArgBlock : ~[<>]+ | '<' ArgBlock* '>' ;
 
 Literal : ["] (~["]|'\\"'|'\\\\')+ ["] ;
 TokenIdent : 'a'..'z' (Letter | Digit | '_')* ;

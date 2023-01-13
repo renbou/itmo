@@ -1,0 +1,77 @@
+[
+  func evaluate(op string, a, b float64) float64 {
+    switch op {
+      case "+":
+        return a + b
+      case "-":
+        return a - b
+      case "*":
+        return a * b
+      case "/":
+        return a / b
+    }
+    panic(fmt.Sprintf("unknown operator: %s", op))
+  }
+]
+
+tokens {
+  number = "\\d+(\\.\\d+)?";
+
+  prec0 = "[+-]";
+  prec1 = "[*/]";
+}
+
+rules {
+  Expr [ ret float64 ]
+    = Term ExprM < acc: $1.ret >
+    [ $0.ret = $2.ret ]
+    ;
+
+  ExprM [ acc float64; ret float64 ]
+    = prec0 Term ExprM< acc: evaluate($1, $0.acc, $2.ret) >
+    [ $0.ret = $3.ret ]
+    ;
+  ExprM
+    =
+    [ $0.ret = $0.acc ]
+    ;
+  
+  Term [ ret float64 ]
+    = UFactor TermM< acc: $1.ret >
+    [ $0.ret = $2.ret ]
+    ;
+
+  TermM [ acc float64; ret float64 ]
+    = prec1 UFactor TermM< acc: evaluate($1, $0.acc, $2.ret) >
+    [ $0.ret = $3.ret ]
+    ;
+  TermM
+    =
+    [ $0.ret = $0.acc ]
+    ;
+
+  UFactor [ ret float64 ]
+    = prec0 Factor
+    [ $0.ret = evaluate($1, 0, $2.ret) ]
+    ;
+  UFactor
+    = Factor
+    [ $0.ret = $1.ret ]
+    ;
+
+  Factor [ ret float64 ]
+    = number
+    [
+      v, err := strconv.ParseFloat($1, 64)
+      if err != nil {
+        panic(fmt.Sprintf("failed to parse number %s: %s", $1, err))
+      }
+
+      $0.ret = v
+    ]
+    ;
+  Factor
+    = "(" Expr ")"
+    [ $0.ret = $2.ret ]
+    ;
+}

@@ -11,6 +11,18 @@ import (
 
 import "strings"
 
+func trimBlock(block, l, r string) string {
+	return strings.TrimPrefix(strings.TrimSuffix(block, r), l)
+}
+
+func trimCode(code string) string {
+	return trimBlock(code, "[", "]")
+}
+
+func trimArgs(args string) string {
+	return trimBlock(args, "<", ">")
+}
+
 // Suppress unused import errors
 var _ = fmt.Printf
 var _ = strconv.Itoa
@@ -37,8 +49,8 @@ func ll1grammarParserInit() {
 		"", "'tokens'", "'{'", "'}'", "'='", "';'", "'rules'",
 	}
 	staticData.symbolicNames = []string{
-		"", "", "", "", "", "", "", "Code", "Literal", "TokenIdent", "RuleIdent",
-		"Whitespace",
+		"", "", "", "", "", "", "", "Code", "Args", "Literal", "TokenIdent",
+		"RuleIdent", "Whitespace",
 	}
 	staticData.ruleNames = []string{
 		"ll1Grammar", "ll1Tokens", "optionalTokensNamed", "ll1Rules", "allRules",
@@ -46,38 +58,41 @@ func ll1grammarParserInit() {
 	}
 	staticData.predictionContextCache = antlr.NewPredictionContextCache()
 	staticData.serializedATN = []int32{
-		4, 1, 11, 84, 2, 0, 7, 0, 2, 1, 7, 1, 2, 2, 7, 2, 2, 3, 7, 3, 2, 4, 7,
-		4, 2, 5, 7, 5, 2, 6, 7, 6, 2, 7, 7, 7, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1,
-		2, 3, 2, 35, 8, 2, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 4, 1, 4, 1, 4,
-		1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 5, 4, 53, 8, 4, 10, 4, 12, 4,
-		56, 9, 4, 1, 5, 1, 5, 3, 5, 60, 8, 5, 1, 5, 1, 5, 1, 5, 3, 5, 65, 8, 5,
-		1, 5, 1, 5, 1, 6, 1, 6, 1, 6, 1, 6, 1, 6, 3, 6, 74, 8, 6, 1, 7, 1, 7, 1,
-		7, 1, 7, 1, 7, 1, 7, 3, 7, 82, 8, 7, 1, 7, 0, 1, 8, 8, 0, 2, 4, 6, 8, 10,
-		12, 14, 0, 0, 82, 0, 16, 1, 0, 0, 0, 2, 20, 1, 0, 0, 0, 4, 34, 1, 0, 0,
-		0, 6, 36, 1, 0, 0, 0, 8, 42, 1, 0, 0, 0, 10, 57, 1, 0, 0, 0, 12, 73, 1,
-		0, 0, 0, 14, 81, 1, 0, 0, 0, 16, 17, 3, 2, 1, 0, 17, 18, 3, 6, 3, 0, 18,
-		19, 6, 0, -1, 0, 19, 1, 1, 0, 0, 0, 20, 21, 5, 1, 0, 0, 21, 22, 5, 2, 0,
-		0, 22, 23, 3, 4, 2, 0, 23, 24, 5, 3, 0, 0, 24, 25, 6, 1, -1, 0, 25, 3,
-		1, 0, 0, 0, 26, 27, 5, 9, 0, 0, 27, 28, 5, 4, 0, 0, 28, 29, 5, 8, 0, 0,
-		29, 30, 5, 5, 0, 0, 30, 31, 3, 4, 2, 0, 31, 32, 6, 2, -1, 0, 32, 35, 1,
-		0, 0, 0, 33, 35, 6, 2, -1, 0, 34, 26, 1, 0, 0, 0, 34, 33, 1, 0, 0, 0, 35,
-		5, 1, 0, 0, 0, 36, 37, 5, 6, 0, 0, 37, 38, 5, 2, 0, 0, 38, 39, 3, 8, 4,
-		0, 39, 40, 5, 3, 0, 0, 40, 41, 6, 3, -1, 0, 41, 7, 1, 0, 0, 0, 42, 43,
-		6, 4, -1, 0, 43, 44, 3, 10, 5, 0, 44, 45, 5, 5, 0, 0, 45, 46, 6, 4, -1,
-		0, 46, 54, 1, 0, 0, 0, 47, 48, 10, 2, 0, 0, 48, 49, 3, 10, 5, 0, 49, 50,
-		5, 5, 0, 0, 50, 51, 6, 4, -1, 0, 51, 53, 1, 0, 0, 0, 52, 47, 1, 0, 0, 0,
-		53, 56, 1, 0, 0, 0, 54, 52, 1, 0, 0, 0, 54, 55, 1, 0, 0, 0, 55, 9, 1, 0,
-		0, 0, 56, 54, 1, 0, 0, 0, 57, 59, 5, 10, 0, 0, 58, 60, 5, 7, 0, 0, 59,
-		58, 1, 0, 0, 0, 59, 60, 1, 0, 0, 0, 60, 61, 1, 0, 0, 0, 61, 62, 5, 4, 0,
-		0, 62, 64, 3, 12, 6, 0, 63, 65, 5, 7, 0, 0, 64, 63, 1, 0, 0, 0, 64, 65,
-		1, 0, 0, 0, 65, 66, 1, 0, 0, 0, 66, 67, 6, 5, -1, 0, 67, 11, 1, 0, 0, 0,
-		68, 69, 3, 14, 7, 0, 69, 70, 3, 12, 6, 0, 70, 71, 6, 6, -1, 0, 71, 74,
-		1, 0, 0, 0, 72, 74, 6, 6, -1, 0, 73, 68, 1, 0, 0, 0, 73, 72, 1, 0, 0, 0,
-		74, 13, 1, 0, 0, 0, 75, 76, 5, 8, 0, 0, 76, 82, 6, 7, -1, 0, 77, 78, 5,
-		9, 0, 0, 78, 82, 6, 7, -1, 0, 79, 80, 5, 10, 0, 0, 80, 82, 6, 7, -1, 0,
-		81, 75, 1, 0, 0, 0, 81, 77, 1, 0, 0, 0, 81, 79, 1, 0, 0, 0, 82, 15, 1,
-		0, 0, 0, 6, 34, 54, 59, 64, 73, 81,
+		4, 1, 12, 90, 2, 0, 7, 0, 2, 1, 7, 1, 2, 2, 7, 2, 2, 3, 7, 3, 2, 4, 7,
+		4, 2, 5, 7, 5, 2, 6, 7, 6, 2, 7, 7, 7, 1, 0, 3, 0, 18, 8, 0, 1, 0, 1, 0,
+		1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 2,
+		1, 2, 1, 2, 1, 2, 1, 2, 3, 2, 38, 8, 2, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1,
+		3, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 5, 4, 56,
+		8, 4, 10, 4, 12, 4, 59, 9, 4, 1, 5, 1, 5, 3, 5, 63, 8, 5, 1, 5, 1, 5, 1,
+		5, 3, 5, 68, 8, 5, 1, 5, 1, 5, 1, 6, 1, 6, 1, 6, 1, 6, 1, 6, 3, 6, 77,
+		8, 6, 1, 7, 1, 7, 1, 7, 1, 7, 1, 7, 1, 7, 3, 7, 85, 8, 7, 1, 7, 3, 7, 88,
+		8, 7, 1, 7, 0, 1, 8, 8, 0, 2, 4, 6, 8, 10, 12, 14, 0, 0, 90, 0, 17, 1,
+		0, 0, 0, 2, 23, 1, 0, 0, 0, 4, 37, 1, 0, 0, 0, 6, 39, 1, 0, 0, 0, 8, 45,
+		1, 0, 0, 0, 10, 60, 1, 0, 0, 0, 12, 76, 1, 0, 0, 0, 14, 87, 1, 0, 0, 0,
+		16, 18, 5, 7, 0, 0, 17, 16, 1, 0, 0, 0, 17, 18, 1, 0, 0, 0, 18, 19, 1,
+		0, 0, 0, 19, 20, 3, 2, 1, 0, 20, 21, 3, 6, 3, 0, 21, 22, 6, 0, -1, 0, 22,
+		1, 1, 0, 0, 0, 23, 24, 5, 1, 0, 0, 24, 25, 5, 2, 0, 0, 25, 26, 3, 4, 2,
+		0, 26, 27, 5, 3, 0, 0, 27, 28, 6, 1, -1, 0, 28, 3, 1, 0, 0, 0, 29, 30,
+		5, 10, 0, 0, 30, 31, 5, 4, 0, 0, 31, 32, 5, 9, 0, 0, 32, 33, 5, 5, 0, 0,
+		33, 34, 3, 4, 2, 0, 34, 35, 6, 2, -1, 0, 35, 38, 1, 0, 0, 0, 36, 38, 6,
+		2, -1, 0, 37, 29, 1, 0, 0, 0, 37, 36, 1, 0, 0, 0, 38, 5, 1, 0, 0, 0, 39,
+		40, 5, 6, 0, 0, 40, 41, 5, 2, 0, 0, 41, 42, 3, 8, 4, 0, 42, 43, 5, 3, 0,
+		0, 43, 44, 6, 3, -1, 0, 44, 7, 1, 0, 0, 0, 45, 46, 6, 4, -1, 0, 46, 47,
+		3, 10, 5, 0, 47, 48, 5, 5, 0, 0, 48, 49, 6, 4, -1, 0, 49, 57, 1, 0, 0,
+		0, 50, 51, 10, 2, 0, 0, 51, 52, 3, 10, 5, 0, 52, 53, 5, 5, 0, 0, 53, 54,
+		6, 4, -1, 0, 54, 56, 1, 0, 0, 0, 55, 50, 1, 0, 0, 0, 56, 59, 1, 0, 0, 0,
+		57, 55, 1, 0, 0, 0, 57, 58, 1, 0, 0, 0, 58, 9, 1, 0, 0, 0, 59, 57, 1, 0,
+		0, 0, 60, 62, 5, 11, 0, 0, 61, 63, 5, 7, 0, 0, 62, 61, 1, 0, 0, 0, 62,
+		63, 1, 0, 0, 0, 63, 64, 1, 0, 0, 0, 64, 65, 5, 4, 0, 0, 65, 67, 3, 12,
+		6, 0, 66, 68, 5, 7, 0, 0, 67, 66, 1, 0, 0, 0, 67, 68, 1, 0, 0, 0, 68, 69,
+		1, 0, 0, 0, 69, 70, 6, 5, -1, 0, 70, 11, 1, 0, 0, 0, 71, 72, 3, 14, 7,
+		0, 72, 73, 3, 12, 6, 0, 73, 74, 6, 6, -1, 0, 74, 77, 1, 0, 0, 0, 75, 77,
+		6, 6, -1, 0, 76, 71, 1, 0, 0, 0, 76, 75, 1, 0, 0, 0, 77, 13, 1, 0, 0, 0,
+		78, 79, 5, 9, 0, 0, 79, 88, 6, 7, -1, 0, 80, 81, 5, 10, 0, 0, 81, 88, 6,
+		7, -1, 0, 82, 84, 5, 11, 0, 0, 83, 85, 5, 8, 0, 0, 84, 83, 1, 0, 0, 0,
+		84, 85, 1, 0, 0, 0, 85, 86, 1, 0, 0, 0, 86, 88, 6, 7, -1, 0, 87, 78, 1,
+		0, 0, 0, 87, 80, 1, 0, 0, 0, 87, 82, 1, 0, 0, 0, 88, 15, 1, 0, 0, 0, 8,
+		17, 37, 57, 62, 67, 76, 84, 87,
 	}
 	deserializer := antlr.NewATNDeserializer(nil)
 	staticData.atn = deserializer.Deserialize(staticData.serializedATN)
@@ -123,10 +138,11 @@ const (
 	LL1GrammarParserT__4       = 5
 	LL1GrammarParserT__5       = 6
 	LL1GrammarParserCode       = 7
-	LL1GrammarParserLiteral    = 8
-	LL1GrammarParserTokenIdent = 9
-	LL1GrammarParserRuleIdent  = 10
-	LL1GrammarParserWhitespace = 11
+	LL1GrammarParserArgs       = 8
+	LL1GrammarParserLiteral    = 9
+	LL1GrammarParserTokenIdent = 10
+	LL1GrammarParserRuleIdent  = 11
+	LL1GrammarParserWhitespace = 12
 )
 
 // LL1GrammarParser rules.
@@ -147,6 +163,12 @@ type ILl1GrammarContext interface {
 
 	// GetParser returns the parser.
 	GetParser() antlr.Parser
+
+	// GetH returns the h token.
+	GetH() antlr.Token
+
+	// SetH sets the h token.
+	SetH(antlr.Token)
 
 	// GetT returns the t rule contexts.
 	GetT() ILl1TokensContext
@@ -174,6 +196,7 @@ type Ll1GrammarContext struct {
 	*antlr.BaseParserRuleContext
 	parser  antlr.Parser
 	grammar Grammar
+	h       antlr.Token
 	t       ILl1TokensContext
 	r       ILl1RulesContext
 }
@@ -199,6 +222,10 @@ func NewLl1GrammarContext(parser antlr.Parser, parent antlr.ParserRuleContext, i
 }
 
 func (s *Ll1GrammarContext) GetParser() antlr.Parser { return s.parser }
+
+func (s *Ll1GrammarContext) GetH() antlr.Token { return s.h }
+
+func (s *Ll1GrammarContext) SetH(v antlr.Token) { s.h = v }
 
 func (s *Ll1GrammarContext) GetT() ILl1TokensContext { return s.t }
 
@@ -244,6 +271,10 @@ func (s *Ll1GrammarContext) Ll1Rules() ILl1RulesContext {
 	return t.(ILl1RulesContext)
 }
 
+func (s *Ll1GrammarContext) Code() antlr.TerminalNode {
+	return s.GetToken(LL1GrammarParserCode, 0)
+}
+
 func (s *Ll1GrammarContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
@@ -258,6 +289,7 @@ func (p *LL1GrammarParser) Ll1Grammar() (localctx ILl1GrammarContext) {
 
 	localctx = NewLl1GrammarContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 0, LL1GrammarParserRULE_ll1Grammar)
+	var _la int
 
 	defer func() {
 		p.ExitRule()
@@ -276,21 +308,42 @@ func (p *LL1GrammarParser) Ll1Grammar() (localctx ILl1GrammarContext) {
 	}()
 
 	p.EnterOuterAlt(localctx, 1)
+	p.SetState(17)
+	p.GetErrorHandler().Sync(p)
+	_la = p.GetTokenStream().LA(1)
+
+	if _la == LL1GrammarParserCode {
+		{
+			p.SetState(16)
+
+			var _m = p.Match(LL1GrammarParserCode)
+
+			localctx.(*Ll1GrammarContext).h = _m
+		}
+
+	}
 	{
-		p.SetState(16)
+		p.SetState(19)
 
 		var _x = p.Ll1Tokens()
 
 		localctx.(*Ll1GrammarContext).t = _x
 	}
 	{
-		p.SetState(17)
+		p.SetState(20)
 
 		var _x = p.Ll1Rules()
 
 		localctx.(*Ll1GrammarContext).r = _x
 	}
-	localctx.(*Ll1GrammarContext).SetGrammar(Grammar{LexTokens: localctx.(*Ll1GrammarContext).GetT().GetTokens(), StartNonTerminal: localctx.(*Ll1GrammarContext).GetR().GetStartNonTerm(), ParseRules: localctx.(*Ll1GrammarContext).GetR().GetRules()})
+
+	localctx.(*Ll1GrammarContext).SetGrammar(Grammar{Header: trimCode((func() string {
+		if localctx.(*Ll1GrammarContext).GetH() == nil {
+			return ""
+		} else {
+			return localctx.(*Ll1GrammarContext).GetH().GetText()
+		}
+	}())), LexTokens: localctx.(*Ll1GrammarContext).GetT().GetTokens(), StartNonTerminal: localctx.(*Ll1GrammarContext).GetR().GetStartNonTerm(), ParseRules: localctx.(*Ll1GrammarContext).GetR().GetRules()})
 
 	return localctx
 }
@@ -404,22 +457,22 @@ func (p *LL1GrammarParser) Ll1Tokens() (localctx ILl1TokensContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(20)
+		p.SetState(23)
 		p.Match(LL1GrammarParserT__0)
 	}
 	{
-		p.SetState(21)
+		p.SetState(24)
 		p.Match(LL1GrammarParserT__1)
 	}
 	{
-		p.SetState(22)
+		p.SetState(25)
 
 		var _x = p.OptionalTokensNamed()
 
 		localctx.(*Ll1TokensContext).r = _x
 	}
 	{
-		p.SetState(23)
+		p.SetState(26)
 		p.Match(LL1GrammarParserT__2)
 	}
 	localctx.(*Ll1TokensContext).SetTokens(LexTokens{named: localctx.(*Ll1TokensContext).GetR().GetNamed()})
@@ -564,36 +617,36 @@ func (p *LL1GrammarParser) OptionalTokensNamed() (localctx IOptionalTokensNamedC
 		}
 	}()
 
-	p.SetState(34)
+	p.SetState(37)
 	p.GetErrorHandler().Sync(p)
 
 	switch p.GetTokenStream().LA(1) {
 	case LL1GrammarParserTokenIdent:
 		p.EnterOuterAlt(localctx, 1)
 		{
-			p.SetState(26)
+			p.SetState(29)
 
 			var _m = p.Match(LL1GrammarParserTokenIdent)
 
 			localctx.(*OptionalTokensNamedContext).n = _m
 		}
 		{
-			p.SetState(27)
+			p.SetState(30)
 			p.Match(LL1GrammarParserT__3)
 		}
 		{
-			p.SetState(28)
+			p.SetState(31)
 
 			var _m = p.Match(LL1GrammarParserLiteral)
 
 			localctx.(*OptionalTokensNamedContext).l = _m
 		}
 		{
-			p.SetState(29)
+			p.SetState(32)
 			p.Match(LL1GrammarParserT__4)
 		}
 		{
-			p.SetState(30)
+			p.SetState(33)
 
 			var _x = p.OptionalTokensNamed()
 
@@ -738,22 +791,22 @@ func (p *LL1GrammarParser) Ll1Rules() (localctx ILl1RulesContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(36)
+		p.SetState(39)
 		p.Match(LL1GrammarParserT__5)
 	}
 	{
-		p.SetState(37)
+		p.SetState(40)
 		p.Match(LL1GrammarParserT__1)
 	}
 	{
-		p.SetState(38)
+		p.SetState(41)
 
 		var _x = p.allRules(0)
 
 		localctx.(*Ll1RulesContext).r = _x
 	}
 	{
-		p.SetState(39)
+		p.SetState(42)
 		p.Match(LL1GrammarParserT__2)
 	}
 
@@ -921,14 +974,14 @@ func (p *LL1GrammarParser) allRules(_p int) (localctx IAllRulesContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(43)
+		p.SetState(46)
 
 		var _x = p.SingleRule()
 
 		localctx.(*AllRulesContext).r = _x
 	}
 	{
-		p.SetState(44)
+		p.SetState(47)
 		p.Match(LL1GrammarParserT__4)
 	}
 
@@ -936,9 +989,9 @@ func (p *LL1GrammarParser) allRules(_p int) (localctx IAllRulesContext) {
 	localctx.(*AllRulesContext).SetRules(ParseRules{localctx.(*AllRulesContext).GetR().GetName(): []ParseRule{localctx.(*AllRulesContext).GetR().GetRule_()}})
 
 	p.GetParserRuleContext().SetStop(p.GetTokenStream().LT(-1))
-	p.SetState(54)
+	p.SetState(57)
 	p.GetErrorHandler().Sync(p)
-	_alt = p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 1, p.GetParserRuleContext())
+	_alt = p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 2, p.GetParserRuleContext())
 
 	for _alt != 2 && _alt != antlr.ATNInvalidAltNumber {
 		if _alt == 1 {
@@ -949,20 +1002,20 @@ func (p *LL1GrammarParser) allRules(_p int) (localctx IAllRulesContext) {
 			localctx = NewAllRulesContext(p, _parentctx, _parentState)
 			localctx.(*AllRulesContext).rest = _prevctx
 			p.PushNewRecursionContext(localctx, _startState, LL1GrammarParserRULE_allRules)
-			p.SetState(47)
+			p.SetState(50)
 
 			if !(p.Precpred(p.GetParserRuleContext(), 2)) {
 				panic(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 2)", ""))
 			}
 			{
-				p.SetState(48)
+				p.SetState(51)
 
 				var _x = p.SingleRule()
 
 				localctx.(*AllRulesContext).r = _x
 			}
 			{
-				p.SetState(49)
+				p.SetState(52)
 				p.Match(LL1GrammarParserT__4)
 			}
 
@@ -971,9 +1024,9 @@ func (p *LL1GrammarParser) allRules(_p int) (localctx IAllRulesContext) {
 			localctx.(*AllRulesContext).rules[localctx.(*AllRulesContext).GetR().GetName()] = append(localctx.(*AllRulesContext).rules[localctx.(*AllRulesContext).GetR().GetName()], localctx.(*AllRulesContext).GetR().GetRule_())
 
 		}
-		p.SetState(56)
+		p.SetState(59)
 		p.GetErrorHandler().Sync(p)
-		_alt = p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 1, p.GetParserRuleContext())
+		_alt = p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 2, p.GetParserRuleContext())
 	}
 
 	return localctx
@@ -1145,19 +1198,19 @@ func (p *LL1GrammarParser) SingleRule() (localctx ISingleRuleContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(57)
+		p.SetState(60)
 
 		var _m = p.Match(LL1GrammarParserRuleIdent)
 
 		localctx.(*SingleRuleContext).n = _m
 	}
-	p.SetState(59)
+	p.SetState(62)
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
 	if _la == LL1GrammarParserCode {
 		{
-			p.SetState(58)
+			p.SetState(61)
 
 			var _m = p.Match(LL1GrammarParserCode)
 
@@ -1166,23 +1219,23 @@ func (p *LL1GrammarParser) SingleRule() (localctx ISingleRuleContext) {
 
 	}
 	{
-		p.SetState(61)
+		p.SetState(64)
 		p.Match(LL1GrammarParserT__3)
 	}
 	{
-		p.SetState(62)
+		p.SetState(65)
 
 		var _x = p.RuleComponentList()
 
 		localctx.(*SingleRuleContext).c = _x
 	}
-	p.SetState(64)
+	p.SetState(67)
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
 	if _la == LL1GrammarParserCode {
 		{
-			p.SetState(63)
+			p.SetState(66)
 
 			var _m = p.Match(LL1GrammarParserCode)
 
@@ -1200,20 +1253,20 @@ func (p *LL1GrammarParser) SingleRule() (localctx ISingleRuleContext) {
 	}()))
 	localctx.(*SingleRuleContext).SetRule_(ParseRule{
 		Components: localctx.(*SingleRuleContext).GetC().GetComponents(),
-		Attributes: strings.TrimPrefix(strings.TrimSuffix((func() string {
+		Attributes: trimCode((func() string {
 			if localctx.(*SingleRuleContext).GetAttributes() == nil {
 				return ""
 			} else {
 				return localctx.(*SingleRuleContext).GetAttributes().GetText()
 			}
-		}()), "]"), "["),
-		Code: strings.TrimPrefix(strings.TrimSuffix((func() string {
+		}())),
+		Code: trimCode((func() string {
 			if localctx.(*SingleRuleContext).GetCode() == nil {
 				return ""
 			} else {
 				return localctx.(*SingleRuleContext).GetCode().GetText()
 			}
-		}()), "]"), "["),
+		}())),
 	})
 
 	return localctx
@@ -1353,21 +1406,21 @@ func (p *LL1GrammarParser) RuleComponentList() (localctx IRuleComponentListConte
 		}
 	}()
 
-	p.SetState(73)
+	p.SetState(76)
 	p.GetErrorHandler().Sync(p)
 
 	switch p.GetTokenStream().LA(1) {
 	case LL1GrammarParserLiteral, LL1GrammarParserTokenIdent, LL1GrammarParserRuleIdent:
 		p.EnterOuterAlt(localctx, 1)
 		{
-			p.SetState(68)
+			p.SetState(71)
 
 			var _x = p.RuleComponent()
 
 			localctx.(*RuleComponentListContext).c = _x
 		}
 		{
-			p.SetState(69)
+			p.SetState(72)
 
 			var _x = p.RuleComponentList()
 
@@ -1402,6 +1455,9 @@ type IRuleComponentContext interface {
 	// GetR returns the r token.
 	GetR() antlr.Token
 
+	// GetA returns the a token.
+	GetA() antlr.Token
+
 	// SetL sets the l token.
 	SetL(antlr.Token)
 
@@ -1410,6 +1466,9 @@ type IRuleComponentContext interface {
 
 	// SetR sets the r token.
 	SetR(antlr.Token)
+
+	// SetA sets the a token.
+	SetA(antlr.Token)
 
 	// GetComponent returns the component attribute.
 	GetComponent() ParseRuleComponent
@@ -1428,6 +1487,7 @@ type RuleComponentContext struct {
 	l         antlr.Token
 	t         antlr.Token
 	r         antlr.Token
+	a         antlr.Token
 }
 
 func NewEmptyRuleComponentContext() *RuleComponentContext {
@@ -1458,11 +1518,15 @@ func (s *RuleComponentContext) GetT() antlr.Token { return s.t }
 
 func (s *RuleComponentContext) GetR() antlr.Token { return s.r }
 
+func (s *RuleComponentContext) GetA() antlr.Token { return s.a }
+
 func (s *RuleComponentContext) SetL(v antlr.Token) { s.l = v }
 
 func (s *RuleComponentContext) SetT(v antlr.Token) { s.t = v }
 
 func (s *RuleComponentContext) SetR(v antlr.Token) { s.r = v }
+
+func (s *RuleComponentContext) SetA(v antlr.Token) { s.a = v }
 
 func (s *RuleComponentContext) GetComponent() ParseRuleComponent { return s.component }
 
@@ -1480,6 +1544,10 @@ func (s *RuleComponentContext) RuleIdent() antlr.TerminalNode {
 	return s.GetToken(LL1GrammarParserRuleIdent, 0)
 }
 
+func (s *RuleComponentContext) Args() antlr.TerminalNode {
+	return s.GetToken(LL1GrammarParserArgs, 0)
+}
+
 func (s *RuleComponentContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
@@ -1494,6 +1562,7 @@ func (p *LL1GrammarParser) RuleComponent() (localctx IRuleComponentContext) {
 
 	localctx = NewRuleComponentContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 14, LL1GrammarParserRULE_ruleComponent)
+	var _la int
 
 	defer func() {
 		p.ExitRule()
@@ -1511,14 +1580,14 @@ func (p *LL1GrammarParser) RuleComponent() (localctx IRuleComponentContext) {
 		}
 	}()
 
-	p.SetState(81)
+	p.SetState(87)
 	p.GetErrorHandler().Sync(p)
 
 	switch p.GetTokenStream().LA(1) {
 	case LL1GrammarParserLiteral:
 		p.EnterOuterAlt(localctx, 1)
 		{
-			p.SetState(75)
+			p.SetState(78)
 
 			var _m = p.Match(LL1GrammarParserLiteral)
 
@@ -1529,7 +1598,7 @@ func (p *LL1GrammarParser) RuleComponent() (localctx IRuleComponentContext) {
 	case LL1GrammarParserTokenIdent:
 		p.EnterOuterAlt(localctx, 2)
 		{
-			p.SetState(77)
+			p.SetState(80)
 
 			var _m = p.Match(LL1GrammarParserTokenIdent)
 
@@ -1546,11 +1615,25 @@ func (p *LL1GrammarParser) RuleComponent() (localctx IRuleComponentContext) {
 	case LL1GrammarParserRuleIdent:
 		p.EnterOuterAlt(localctx, 3)
 		{
-			p.SetState(79)
+			p.SetState(82)
 
 			var _m = p.Match(LL1GrammarParserRuleIdent)
 
 			localctx.(*RuleComponentContext).r = _m
+		}
+		p.SetState(84)
+		p.GetErrorHandler().Sync(p)
+		_la = p.GetTokenStream().LA(1)
+
+		if _la == LL1GrammarParserArgs {
+			{
+				p.SetState(83)
+
+				var _m = p.Match(LL1GrammarParserArgs)
+
+				localctx.(*RuleComponentContext).a = _m
+			}
+
 		}
 		localctx.(*RuleComponentContext).SetComponent(ParseRuleComponent{Type: ParseRuleComponentRule, Value: (func() string {
 			if localctx.(*RuleComponentContext).GetR() == nil {
@@ -1558,7 +1641,13 @@ func (p *LL1GrammarParser) RuleComponent() (localctx IRuleComponentContext) {
 			} else {
 				return localctx.(*RuleComponentContext).GetR().GetText()
 			}
-		}())})
+		}()), Args: trimArgs((func() string {
+			if localctx.(*RuleComponentContext).GetA() == nil {
+				return ""
+			} else {
+				return localctx.(*RuleComponentContext).GetA().GetText()
+			}
+		}()))})
 
 	default:
 		panic(antlr.NewNoViableAltException(p, nil, nil, nil, nil, nil))

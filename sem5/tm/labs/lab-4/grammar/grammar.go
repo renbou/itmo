@@ -12,6 +12,7 @@ import (
 
 // Grammar describes a fully parsed grammar.
 type Grammar struct {
+	Header           string
 	LexTokens        LexTokens
 	StartNonTerminal string
 	ParseRules       ParseRules
@@ -46,6 +47,7 @@ const (
 type ParseRuleComponent struct {
 	Type  ParseRuleComponentType
 	Value string
+	Args  string
 }
 
 // ParseRule describes a grammar's parse rule, consisting of multiple components one after the other.
@@ -120,7 +122,7 @@ func (grammar *Grammar) Validate() error {
 
 func (t *LexTokens) validate() error {
 	for _, t := range t.named {
-		if _, err := regexp.CompilePOSIX(t.regexp); err != nil {
+		if _, err := regexp.Compile(t.regexp); err != nil {
 			return fmt.Errorf("invalid regexp %s for named token %s: %w", strconv.Quote(t.regexp), t.name, err)
 		}
 	}

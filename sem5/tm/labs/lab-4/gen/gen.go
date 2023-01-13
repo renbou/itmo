@@ -33,10 +33,10 @@ func GenerateAll(g grammar.Grammar, pkg string) ([]byte, error) {
 		return nil, fmt.Errorf("generating parser: %w", err)
 	}
 
-	return constructFile(pkg, lexer, parser)
+	return constructFile(pkg, g.Header, lexer, parser)
 }
 
-func constructFile(pkg string, lexer, parser []byte) ([]byte, error) {
+func constructFile(pkg, header string, lexer, parser []byte) ([]byte, error) {
 	var b bytes.Buffer
 	b.WriteString("package " + pkg + "\n")
 	b.WriteString(`import (
@@ -45,6 +45,7 @@ func constructFile(pkg string, lexer, parser []byte) ([]byte, error) {
 		"regexp"
 		"strconv"
 	)`)
+	b.WriteString(header)
 	b.Write(lexer)
 	b.Write(parser)
 
