@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strconv"
 )
+import "math"
 
 func evaluate(op string, a, b float64) float64 {
 	switch op {
@@ -21,6 +22,22 @@ func evaluate(op string, a, b float64) float64 {
 	panic(fmt.Sprintf("unknown operator: %s", op))
 }
 
+func factorial(a float64) float64 {
+	if math.Abs(a-math.Round(a)) > 1e-9 {
+		panic(fmt.Sprintf("%f is not an integer, cannot take factorial", a))
+	} else if a < 0 {
+		panic(fmt.Sprintf("cannot take factorial of negative number %f", a))
+	}
+
+	n := int(math.Round(a))
+	r := 1
+	for i := 1; i <= n; i++ {
+		r *= i
+	}
+
+	return float64(r)
+}
+
 type token struct {
 	id    int
 	value string
@@ -28,6 +45,7 @@ type token struct {
 
 var (
 	tokenRegExps = []*regexp.Regexp{
+		regexp.MustCompile(`^!`),
 		regexp.MustCompile(`^\(`),
 		regexp.MustCompile(`^\)`),
 		regexp.MustCompile(`^[*/]`),
@@ -119,7 +137,7 @@ func (p *parser) parseExpr(node *ParserNodeExpr) (*ParserNodeExpr, error) {
 	var children []any
 
 	switch p.token().id {
-	case 4, 0, 3:
+	case 4, 1, 5:
 		if child, err := p.parseTerm(&ParserNodeTerm{}); err != nil {
 			return nil, err
 		} else {
@@ -178,8 +196,8 @@ func (p *parser) parseExprM(node *ParserNodeExprM) (*ParserNodeExprM, error) {
 	var children []any
 
 	switch p.token().id {
-	case 3:
-		if p.token().id != 3 {
+	case 4:
+		if p.token().id != 4 {
 			return nil, p.errUnexpected("ExprM")
 		} else {
 			children = append(children, p.token().value)
@@ -201,7 +219,7 @@ func (p *parser) parseExprM(node *ParserNodeExprM) (*ParserNodeExprM, error) {
 		node.ret = children[2].(*ParserNodeExprM).ret
 
 		return node, nil
-	case 1, -1:
+	case -1, 2:
 		node.ret = node.acc
 
 		return node, nil
@@ -246,8 +264,8 @@ func (p *parser) parseFactor(node *ParserNodeFactor) (*ParserNodeFactor, error) 
 	var children []any
 
 	switch p.token().id {
-	case 4:
-		if p.token().id != 4 {
+	case 5:
+		if p.token().id != 5 {
 			return nil, p.errUnexpected("Factor")
 		} else {
 			children = append(children, p.token().value)
@@ -264,8 +282,8 @@ func (p *parser) parseFactor(node *ParserNodeFactor) (*ParserNodeFactor, error) 
 		node.ret = v
 
 		return node, nil
-	case 0:
-		if p.token().id != 0 {
+	case 1:
+		if p.token().id != 1 {
 			return nil, p.errUnexpected("Factor")
 		} else {
 			children = append(children, p.token().value)
@@ -276,7 +294,7 @@ func (p *parser) parseFactor(node *ParserNodeFactor) (*ParserNodeFactor, error) 
 		} else {
 			children = append(children, child)
 		}
-		if p.token().id != 1 {
+		if p.token().id != 2 {
 			return nil, p.errUnexpected("Factor")
 		} else {
 			children = append(children, p.token().value)
@@ -312,6 +330,70 @@ func ParseFactor(text string) (*ParserNodeFactor, error) {
 	return result, nil
 }
 
+type ParserNodeFactorial struct {
+	children []any
+	acc      float64
+	ret      float64
+}
+
+func (node *ParserNodeFactorial) Name() string {
+	return "Factorial"
+}
+
+func (node *ParserNodeFactorial) Children() []any {
+	return node.children
+}
+
+func (p *parser) parseFactorial(node *ParserNodeFactorial) (*ParserNodeFactorial, error) {
+	var children []any
+
+	switch p.token().id {
+	case 0:
+		if p.token().id != 0 {
+			return nil, p.errUnexpected("Factorial")
+		} else {
+			children = append(children, p.token().value)
+		}
+		p.contin()
+		if child, err := p.parseFactorial(&ParserNodeFactorial{acc: factorial(node.acc)}); err != nil {
+			return nil, err
+		} else {
+			children = append(children, child)
+		}
+
+		node.children = children
+
+		node.ret = children[1].(*ParserNodeFactorial).ret
+
+		return node, nil
+	case 2, -1, 3, 4:
+		node.ret = node.acc
+
+		return node, nil
+	default:
+		return nil, p.errUnexpected("Factorial")
+	}
+}
+
+func ParseFactorial(text string) (*ParserNodeFactorial, error) {
+	tokens, err := lex(text)
+	if err != nil {
+		return nil, err
+	}
+
+	p := parser{tokens, 0}
+
+	result, err := p.parseFactorial(&ParserNodeFactorial{})
+	if err != nil {
+		return nil, err
+	}
+
+	if p.pos != len(tokens)-1 {
+		return nil, ErrNotExhausted
+	}
+	return result, nil
+}
+
 type ParserNodeTerm struct {
 	children []any
 	ret      float64
@@ -329,7 +411,7 @@ func (p *parser) parseTerm(node *ParserNodeTerm) (*ParserNodeTerm, error) {
 	var children []any
 
 	switch p.token().id {
-	case 4, 0, 3:
+	case 4, 1, 5:
 		if child, err := p.parseUFactor(&ParserNodeUFactor{}); err != nil {
 			return nil, err
 		} else {
@@ -388,8 +470,8 @@ func (p *parser) parseTermM(node *ParserNodeTermM) (*ParserNodeTermM, error) {
 	var children []any
 
 	switch p.token().id {
-	case 2:
-		if p.token().id != 2 {
+	case 3:
+		if p.token().id != 3 {
 			return nil, p.errUnexpected("TermM")
 		} else {
 			children = append(children, p.token().value)
@@ -411,7 +493,7 @@ func (p *parser) parseTermM(node *ParserNodeTermM) (*ParserNodeTermM, error) {
 		node.ret = children[2].(*ParserNodeTermM).ret
 
 		return node, nil
-	case 3, -1, 1:
+	case 2, -1, 4:
 		node.ret = node.acc
 
 		return node, nil
@@ -456,8 +538,8 @@ func (p *parser) parseUFactor(node *ParserNodeUFactor) (*ParserNodeUFactor, erro
 	var children []any
 
 	switch p.token().id {
-	case 3:
-		if p.token().id != 3 {
+	case 4:
+		if p.token().id != 4 {
 			return nil, p.errUnexpected("UFactor")
 		} else {
 			children = append(children, p.token().value)
@@ -468,14 +550,7 @@ func (p *parser) parseUFactor(node *ParserNodeUFactor) (*ParserNodeUFactor, erro
 		} else {
 			children = append(children, child)
 		}
-
-		node.children = children
-
-		node.ret = evaluate(children[0].(string), 0, children[1].(*ParserNodeFactor).ret)
-
-		return node, nil
-	case 4, 0:
-		if child, err := p.parseFactor(&ParserNodeFactor{}); err != nil {
+		if child, err := p.parseFactorial(&ParserNodeFactorial{acc: children[1].(*ParserNodeFactor).ret}); err != nil {
 			return nil, err
 		} else {
 			children = append(children, child)
@@ -483,7 +558,24 @@ func (p *parser) parseUFactor(node *ParserNodeUFactor) (*ParserNodeUFactor, erro
 
 		node.children = children
 
-		node.ret = children[0].(*ParserNodeFactor).ret
+		node.ret = evaluate(children[0].(string), 0, children[2].(*ParserNodeFactorial).ret)
+
+		return node, nil
+	case 5, 1:
+		if child, err := p.parseFactor(&ParserNodeFactor{}); err != nil {
+			return nil, err
+		} else {
+			children = append(children, child)
+		}
+		if child, err := p.parseFactorial(&ParserNodeFactorial{acc: children[0].(*ParserNodeFactor).ret}); err != nil {
+			return nil, err
+		} else {
+			children = append(children, child)
+		}
+
+		node.children = children
+
+		node.ret = children[1].(*ParserNodeFactorial).ret
 
 		return node, nil
 	default:

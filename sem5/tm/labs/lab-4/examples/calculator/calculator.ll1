@@ -1,4 +1,6 @@
 [
+  import "math"
+
   func evaluate(op string, a, b float64) float64 {
     switch op {
       case "+":
@@ -11,6 +13,22 @@
         return a / b
     }
     panic(fmt.Sprintf("unknown operator: %s", op))
+  }
+
+  func factorial(a float64) float64 {
+    if math.Abs(a - math.Round(a)) > 1e-9 {
+      panic(fmt.Sprintf("%f is not an integer, cannot take factorial", a))
+    } else if a < 0 {
+      panic(fmt.Sprintf("cannot take factorial of negative number %f", a))
+    }
+
+    n := int(math.Round(a))
+    r := 1
+    for i := 1; i <= n; i++ {
+      r *= i
+    }
+
+    return float64(r)
   }
 ]
 
@@ -51,12 +69,21 @@ rules {
     ;
 
   UFactor [ ret float64 ]
-    = prec0 Factor
-    [ $0.ret = evaluate($1, 0, $2.ret) ]
+    = prec0 Factor Factorial < acc: $2.ret >
+    [ $0.ret = evaluate($1, 0, $3.ret) ]
     ;
   UFactor
-    = Factor
-    [ $0.ret = $1.ret ]
+    = Factor Factorial < acc: $1.ret >
+    [ $0.ret = $2.ret ]
+    ;
+  
+  Factorial [ acc float64; ret float64 ]
+    = "!" Factorial < acc: factorial($0.acc) >
+    [ $0.ret = $2.ret ]
+    ;
+  Factorial
+    =
+    [ $0.ret = $0.acc ]
     ;
 
   Factor [ ret float64 ]

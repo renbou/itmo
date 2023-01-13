@@ -100,7 +100,13 @@ func (c *calculator) View() string {
 	return history + c.input.View()
 }
 
-func calculate(input string) (float64, string) {
+func calculate(input string) (res float64, msg string) {
+	defer func() {
+		if r := recover(); r != nil {
+			msg = fmt.Sprint(r)
+		}
+	}()
+
 	e, err := ParseExpr(input)
 	if err != nil {
 		return 0, fmt.Sprintf("cannot parse expression: %s", err)
