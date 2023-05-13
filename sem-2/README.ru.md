@@ -29,7 +29,7 @@
 
 ### Домашние задания
 
-- _[Приблизительное вычисление значения Pi методом Монте-Карло](./programming-in-cpp/homeworks/hwk-1/README.md)_
+- _[Приблизительное вычисление значения Пи методом Монте-Карло](./programming-in-cpp/homeworks/hwk-1/README.md)_
 - _[Калькулятор со свёртками](./programming-in-cpp/homeworks/hwk-2/README.md)_
 - _[Декодер сообщений трейдингового протокола BOE](./programming-in-cpp/homeworks/hwk-3/README.md)_
 - _[LFRU-кеш с buddy аллокатором](./programming-in-cpp/homeworks/)_
