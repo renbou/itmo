@@ -32,7 +32,7 @@
 - _[Приблизительное вычисление значения Пи методом Монте-Карло](./programming-in-cpp/homeworks/hwk-1/README.md)_
 - _[Калькулятор со свёртками](./programming-in-cpp/homeworks/hwk-2/README.md)_
 - _[Декодер сообщений трейдингового протокола BOE](./programming-in-cpp/homeworks/hwk-3/README.md)_
-- _[LFRU-кеш с buddy аллокатором](./programming-in-cpp/homeworks/)_
+- _[LFRU-кеш с buddy аллокатором](./programming-in-cpp/homeworks/hwk-4/README.md)_
 - _[Консольная утилита sort](./programming-in-cpp/homeworks/hwk-5/README.md)_
 - _[Шаблонная рандомизированная очередь](./programming-in-cpp/homeworks/hwk-6/README.md)_
 - _[База синонимов слов WordNet](./programming-in-cpp/homeworks/hwk-7/README.md)_
