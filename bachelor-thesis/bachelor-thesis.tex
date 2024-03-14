@@ -1,0 +1,74 @@
+\documentclass[times]{itmo-student-thesis}
+
+%% Список источников в отдельном файле.
+\usepackage{filecontents}
+\begin{filecontents}{bachelor-thesis.bib}
+@book{ bellman,
+    author      = {R. E. Bellman},
+    title       = {Dynamic Programming},
+    address     = {Princeton, NJ},
+    publisher   = {Princeton University Press},
+    numpages    = {342},
+    pagetotal   = {342},
+    year        = {1957},
+    langid      = {english}
+}
+\end{filecontents}
+\addbibresource{bachelor-thesis.bib}
+
+\begin{document}
+
+%% \publishyear нужен для \printmainbibliography, которая далее выводит список источников по годам. 
+\publishyear{2024}
+%% \maketitle отредактирован, чтобы не выводить титульный лист и остальные страницы, т.к. они сейчас не нужны.
+\maketitle{Бакалавр}
+
+%%%%
+%% Оглавление
+%%%%
+\tableofcontents
+
+%%%%
+%% Введение
+%%%%
+\startprefacepage
+
+В данном разделе размещается введение.
+
+%%%%
+%% Первая глава
+%%%%
+\chapter{Первая глава}
+
+%% Пример ссылок.
+Вне обзора:~\cite{bellman}.
+
+\section{Листинги}
+
+В работах студентов кафедры <<Компьютерные технологии>> часто встречаются листинги. Листинги бывают
+двух основных видов~--- исходный код и псевдокод. Первый оформляется с помощью окружения \texttt{lstlisting}
+из пакета \texttt{listings}, который уже включается в стилевике и немного настроен. Пример Hello World на Java
+приведен на листинге~\ref{lst1}.
+
+\begin{lstlisting}[float=!h,caption={Пример исходного кода на Java},label={lst1}]
+public class HelloWorld {
+    public static void main(String[] args) {
+        System.out.println("Hello, world!");
+    }
+}
+\end{lstlisting}
+
+%%%%
+%% Заключение
+%%%%
+\startconclusionpage
+
+В данном разделе размещается заключение.
+
+\printmainbibliography
+
+%% После этой команды chapter будет генерировать приложения, нумерованные русскими буквами.
+%% \startappendices из старого стилевика будет делать то же самое
+\appendix
+
+\end{document}
